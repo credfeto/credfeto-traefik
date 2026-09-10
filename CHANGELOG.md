@@ -11,6 +11,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ## [Unreleased]
 ### Security
 - Restricted the monitoring direct port (457) to POST requests only, since VictoriaMetrics has no built-in authentication and the route was previously open to queries and admin operations from anyone able to reach it.
+- Set a 2-year HSTS header (includeSubDomains, preload) on all HTTPS responses
 ### Added
 - docs/ folder with architecture diagram showing repository folder structure
 - cctv.markridgwell.com host routing to 192.168.60.180 over self-signed TLS
@@ -23,7 +24,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Add active health checks to the DNS routers - RFC 8484 DoH probe for the DNS-over-HTTPS service and the unauthenticated /api/status probe for the Technitium admin console services, so unhealthy DNS servers are automatically taken out of rotation
 - Add health checks to photos, homeassistant, home, defi, linux-cache-01/02, dev-cache-01/02, github-api, cctv, keys and monitoring services (issue #37 Tier A/A'), each verified against the actual backend's own source or documented API behaviour
 - Added Traefik failover services so IPv6-only DNS routers fall back to the IPv4 backend pool when all IPv6 backends are unhealthy, instead of returning an error
-- TBD - to be finalized after review
+- Accept HTTP on port 80 and redirect it to HTTPS on all hosts
 ### Fixed
 - YAML document start markers added to docker-compose.yml, dynamic_conf.template.yml, and traefik.yml to satisfy ansible-lint
 - watchtower missing a restart policy, leaving it stopped after a Docker daemon restart
