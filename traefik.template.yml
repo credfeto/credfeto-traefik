@@ -11,11 +11,29 @@ accessLog:
   format: common
 
 entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: web-general
+          scheme: https
+          permanent: true
+    forwardedHeaders:
+      trustedIPs:
+        - "10.0.0.0/8"
+        - "172.16.0.0/12"
+        - "192.168.0.0/16"
+        - "fc00::/7"
+        - "fe80::/10"
+
   web-general:
     address: ":443"
     http:
       tls:
         certResolver: letsencrypt
+      middlewares:
+        - hsts@file
     http3: {}
     forwardedHeaders:
       trustedIPs:
