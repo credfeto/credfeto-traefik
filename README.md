@@ -213,7 +213,11 @@ Port 450 is the Cloudflare Tunnel origin for `photos.markridgwell.com`. To preve
 
 The following table lists all exposed ports and their purposes:
 
+- **80** (TCP): HTTP entrypoint — redirects every request to the 443 entrypoint over HTTPS
 - **443** (TCP/UDP): HTTPS entrypoint — all services with Let's Encrypt TLS + HTTP/3
+
+All HTTPS responses on port 443 carry a `Strict-Transport-Security` header
+(`max-age=63072000; includeSubDomains; preload`, i.e. 2 years).
 
 The ports below are plain HTTP used as Cloudflare Tunnel origin services.
 **Each hostname must have its own dedicated port** — Cloudflare Tunnel ingress rules

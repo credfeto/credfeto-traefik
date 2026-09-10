@@ -1470,3 +1470,9 @@ http:
       headers:
         customRequestHeaders:
           Host: "monitoring.markridgwell.com"
+
+    hsts:
+      headers:
+        stsSeconds: 63072000
+        stsIncludeSubdomains: true
+        stsPreload: true

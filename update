@@ -136,20 +136,33 @@ fi
 
 allow_ipv4_range() {
     range=$1
-    proto=$2
-    if ! firewall-cmd --query-rich-rule="rule family='ipv4' source address='$range' port port='443' protocol='$proto' accept" 2>/dev/null; then
-        firewall-cmd --permanent --add-rich-rule="rule family='ipv4' source address='$range' port port='443' protocol='$proto' accept" \
-            || die "Failed to add IPv4 $proto firewall rule for $range"
+    port=$2
+    proto=$3
+    if ! firewall-cmd --query-rich-rule="rule family='ipv4' source address='$range' port port='$port' protocol='$proto' accept" 2>/dev/null; then
+        firewall-cmd --permanent --add-rich-rule="rule family='ipv4' source address='$range' port port='$port' protocol='$proto' accept" \
+            || die "Failed to add IPv4 $proto firewall rule for $range on port $port"
     fi
 }
 
 allow_ipv6_range() {
     range=$1
-    proto=$2
-    if ! firewall-cmd --query-rich-rule="rule family='ipv6' source address='$range' port port='443' protocol='$proto' accept" 2>/dev/null; then
-        firewall-cmd --permanent --add-rich-rule="rule family='ipv6' source address='$range' port port='443' protocol='$proto' accept" \
-            || die "Failed to add IPv6 $proto firewall rule for $range"
+    port=$2
+    proto=$3
+    if ! firewall-cmd --query-rich-rule="rule family='ipv6' source address='$range' port port='$port' protocol='$proto' accept" 2>/dev/null; then
+        firewall-cmd --permanent --add-rich-rule="rule family='ipv6' source address='$range' port port='$port' protocol='$proto' accept" \
+            || die "Failed to add IPv6 $proto firewall rule for $range on port $port"
     fi
+}
+
+open_port_for_private_networks() {
+    port=$1
+    proto=$2
+    for range in $IPV4_RANGES; do
+        allow_ipv4_range "$range" "$port" "$proto"
+    done
+    for range in $IPV6_RANGES; do
+        allow_ipv6_range "$range" "$port" "$proto"
+    done
 }
 
 allow_public_udp_port() {
@@ -166,19 +179,14 @@ allow_public_udp_port() {
     fi
 }
 
-# 8. Firewall rules - allow private networks to reach port 443 TCP/UDP
+# 8. Firewall rules - allow private networks to reach port 443 TCP/UDP, plus
+#    port 80 TCP for the http->https redirect entrypoint
 IPV4_RANGES="10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
 IPV6_RANGES="fc00::/7 fe80::/10"
 
-for range in $IPV4_RANGES; do
-    allow_ipv4_range "$range" tcp
-    allow_ipv4_range "$range" udp
-done
-
-for range in $IPV6_RANGES; do
-    allow_ipv6_range "$range" tcp
-    allow_ipv6_range "$range" udp
-done
+open_port_for_private_networks 80 tcp
+open_port_for_private_networks 443 tcp
+open_port_for_private_networks 443 udp
 
 allow_public_udp_port 52363
 
