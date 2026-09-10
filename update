@@ -154,6 +154,17 @@ allow_ipv6_range() {
     fi
 }
 
+open_port_for_private_networks() {
+    port=$1
+    proto=$2
+    for range in $IPV4_RANGES; do
+        allow_ipv4_range "$range" "$proto" "$port"
+    done
+    for range in $IPV6_RANGES; do
+        allow_ipv6_range "$range" "$proto" "$port"
+    done
+}
+
 allow_public_udp_port() {
     port=$1
     [ -n "$port" ] || die "Port parameter required"
@@ -173,17 +184,9 @@ allow_public_udp_port() {
 IPV4_RANGES="10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
 IPV6_RANGES="fc00::/7 fe80::/10"
 
-for range in $IPV4_RANGES; do
-    allow_ipv4_range "$range" tcp 80
-    allow_ipv4_range "$range" tcp 443
-    allow_ipv4_range "$range" udp 443
-done
-
-for range in $IPV6_RANGES; do
-    allow_ipv6_range "$range" tcp 80
-    allow_ipv6_range "$range" tcp 443
-    allow_ipv6_range "$range" udp 443
-done
+open_port_for_private_networks 80 tcp
+open_port_for_private_networks 443 tcp
+open_port_for_private_networks 443 udp
 
 allow_public_udp_port 52363
 
