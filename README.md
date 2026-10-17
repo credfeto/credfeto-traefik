@@ -123,9 +123,9 @@ The following DNS routes are configured in `dynamic_conf.template.yml`:
 - Upstream TLS uses a dedicated `serversTransports.dns` transport.
 - `insecureSkipVerify: true` is enabled to allow self-signed backend certificates.
 - `serverName: "dns.markridgwell.com"` is set so SNI matches the backend certificate name.
-- Middleware `dns-header` sets `Host: dns.markridgwell.com` on forwarded requests.
+- The original `Host: dns.markridgwell.com` header is forwarded unchanged, because Traefik's default `passHostHeader: true` applies.
 
-The `dns-01` to `dns-06` routes forward to HTTPS backends on port `53443` via the shared `serversTransports.dns-admin` transport, and each has a host-specific header middleware.
+The `dns-01` to `dns-06` routes forward to HTTPS backends on port `53443` via the shared `serversTransports.dns-admin` transport, and forward the original `Host` header unchanged.
 
 ### IPv6-aware routing
 
