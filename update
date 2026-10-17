@@ -182,7 +182,9 @@ allow_public_udp_port() {
 # 8. Firewall rules - allow private networks to reach port 443 TCP/UDP, plus
 #    port 80 TCP for the http->https redirect entrypoint
 IPV4_RANGES="10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
-IPV6_RANGES="fc00::/7 fe80::/10"
+# 2a02:8010:61d5::/48 is the LAN's global IPv6 prefix: LAN clients use it rather
+# than ULA/link-local, so it must match the internal-only middleware sourceRange
+IPV6_RANGES="fc00::/7 fe80::/10 2a02:8010:61d5::/48"
 
 open_port_for_private_networks 80 tcp
 open_port_for_private_networks 443 tcp
