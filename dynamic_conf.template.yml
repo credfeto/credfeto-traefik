@@ -1276,6 +1276,7 @@ http:
     # No ipStrategy, so the TCP remote address is checked, not X-Forwarded-For.
     # The LAN's own global IPv6 prefix is included because LAN hosts use
     # global addresses, not ULA, so IPv6 LAN clients would otherwise get 403.
+    # Keep in sync with IPV4_RANGES/IPV6_RANGES in the update script.
     internal-only:
       ipAllowList:
         sourceRange:
