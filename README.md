@@ -73,7 +73,7 @@ rules, bootstraps the cloudflared tunnel service on first run, and enables/start
 
 ## Adding a new service
 
-In `dynamic_conf.template.yml`, add a router, service, and middleware following the existing pattern:
+In `dynamic_conf.template.yml`, add a router and service following the existing pattern. Traefik forwards the original `Host` header by default, so add a header middleware only when the backend expects a different `Host` (as `my-service.local` does here):
 
 ```yaml
 http:
