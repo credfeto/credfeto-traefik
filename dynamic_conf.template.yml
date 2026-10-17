@@ -248,6 +248,20 @@ http:
       middlewares:
         - audiobookshelf-header
 
+    familiar-router:
+      rule: "Host(`familiar.markridgwell.com`)"
+      service: familiar-service
+      entryPoints:
+        - web-general
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "markridgwell.com"
+            sans:
+              - "*.markridgwell.com"
+      middlewares:
+        - familiar-header
+
     home-router:
       rule: "Host(`home.markridgwell.com`)"
       service: home-service
@@ -845,6 +859,12 @@ http:
           # no network_mode: host, so 80 is unreachable from outside the container).
           - url: "http://192.168.150.16:13378"
 
+    familiar-service:
+      loadBalancer:
+        # No healthCheck: no unauthenticated health endpoint is known for this app.
+        servers:
+          - url: "http://192.168.150.129:8081"
+
     home-service:
       loadBalancer:
         healthCheck:
@@ -1339,6 +1359,11 @@ http:
       headers:
         customRequestHeaders:
           Host: "audiobookshelf.markridgwell.com"
+
+    familiar-header:
+      headers:
+        customRequestHeaders:
+          Host: "familiar.markridgwell.com"
 
     home-header:
       headers:
