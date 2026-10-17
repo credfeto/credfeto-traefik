@@ -260,6 +260,7 @@ http:
             sans:
               - "*.markridgwell.com"
       middlewares:
+        - internal-only
         - familiar-header
 
     home-router:
@@ -1315,6 +1316,19 @@ http:
           - url: "http://192.168.150.134:8428"
 
   middlewares:
+    # Enforces "internal only" in Traefik itself rather than relying solely on
+    # the host firewall: cloudflared reaches Traefik over loopback, which the
+    # firewall does not filter, so loopback is deliberately excluded here.
+    # No ipStrategy, so the TCP remote address is checked, not X-Forwarded-For.
+    internal-only:
+      ipAllowList:
+        sourceRange:
+          - "10.0.0.0/8"
+          - "172.16.0.0/12"
+          - "192.168.0.0/16"
+          - "fc00::/7"
+          - "fe80::/10"
+
     # Middleware for each header
     pacman-header:
       headers:
