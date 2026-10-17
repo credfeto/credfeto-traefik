@@ -156,6 +156,10 @@ All services are accessible via HTTPS on port 443 with Let's Encrypt certificate
 - `github-api.markridgwell.com` → `http://192.168.150.15:3000`
 - `git-workflow.markridgwell.com` → `https://192.168.150.15:8081`
 
+### Key Management
+
+- `keys.markridgwell.com` → `https://192.168.150.220:8081`
+
 ### Monitoring
 
 - `monitoring.markridgwell.com` → `http://192.168.150.134:8428` — also available on port **457** (HTTP direct, POST only — see below)
@@ -171,6 +175,7 @@ Port 457 is the Cloudflare Tunnel origin for `monitoring.markridgwell.com`, inte
 - `audiobookshelf.markridgwell.com` → `http://192.168.150.16:13378`
 - `familiar.markridgwell.com` → `http://192.168.150.129:8081` (internal only: the `internal-only` middleware rejects any client that is not on a private address range, including loopback, so the route cannot be reached through Cloudflare Tunnel)
 - `defi.markridgwell.com` → `https://192.168.150.12` — also available on port **447** (HTTP direct)
+- `cctv.markridgwell.com` → `https://192.168.60.180`
 
 ### Media
 
