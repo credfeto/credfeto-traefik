@@ -45,6 +45,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - IPv6 backend addresses from dns-01..dns-05 services; backends are IPv4-only for now
 - No-op Host-rewrite middlewares from the homeassistant, audiobookshelf, photos, dns and dns-01..dns-06, github-api, git-workflow, keys and monitoring routes (they set Host to the value the router already matches)
 ### Deployment Changes
+- Firewall rules from ./update now also allow the LAN's global IPv6 prefix 2a02:8010:61d5::/48 to reach ports 80 and 443; re-run ./update to apply
 
 <!--
 Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch
