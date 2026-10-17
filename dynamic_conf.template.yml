@@ -231,8 +231,6 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
-      middlewares:
-        - homeassistant-header
 
     audiobookshelf-router:
       rule: "Host(`audiobookshelf.markridgwell.com`)"
@@ -245,8 +243,6 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
-      middlewares:
-        - audiobookshelf-header
 
     familiar-router:
       rule: "Host(`familiar.markridgwell.com`)"
@@ -261,7 +257,6 @@ http:
               - "*.markridgwell.com"
       middlewares:
         - internal-only
-        - familiar-header
 
     home-router:
       rule: "Host(`home.markridgwell.com`)"
@@ -1363,21 +1358,6 @@ http:
           removeTokenNameOnFailure: true
           tokens:
             - "${PHOTOS_LOCAL_SECRET}"
-
-    homeassistant-header:
-      headers:
-        customRequestHeaders:
-          Host: "homeassistant.markridgwell.com"
-
-    audiobookshelf-header:
-      headers:
-        customRequestHeaders:
-          Host: "audiobookshelf.markridgwell.com"
-
-    familiar-header:
-      headers:
-        customRequestHeaders:
-          Host: "familiar.markridgwell.com"
 
     home-header:
       headers:
