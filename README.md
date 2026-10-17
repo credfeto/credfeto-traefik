@@ -73,7 +73,7 @@ rules, bootstraps the cloudflared tunnel service on first run, and enables/start
 
 ## Adding a new service
 
-In `dynamic_conf.template.yml`, add a router, service, and middleware following the existing pattern:
+In `dynamic_conf.template.yml`, add a router and service following the existing pattern. Traefik forwards the original `Host` header by default, so add a header middleware only when the backend expects a different `Host` (as `my-service.local` does here):
 
 ```yaml
 http:
@@ -82,9 +82,13 @@ http:
       rule: "Host(`my-service.markridgwell.com`)"
       service: my-service
       entryPoints:
-        - web-secure
+        - web-general
       tls:
         certResolver: letsencrypt
+        domains:
+          - main: "markridgwell.com"
+            sans:
+              - "*.markridgwell.com"
       middlewares:
         - my-header
 
@@ -101,6 +105,8 @@ http:
         customRequestHeaders:
           Host: "my-service.local"
 ```
+
+Every Let's Encrypt router carries the same `tls.domains` wildcard block so all routers share one `*.markridgwell.com` certificate. For a service that should only be reachable from the LAN, also add the existing `internal-only` middleware to the router's `middlewares` list.
 
 Traefik watches `dynamic_conf.yml` for changes and reloads automatically — no restart required for route or service changes. To apply template changes that alter `${PHOTOS_LOCAL_SECRET}` or other substituted values, re-run `./update`.
 
@@ -123,9 +129,9 @@ The following DNS routes are configured in `dynamic_conf.template.yml`:
 - Upstream TLS uses a dedicated `serversTransports.dns` transport.
 - `insecureSkipVerify: true` is enabled to allow self-signed backend certificates.
 - `serverName: "dns.markridgwell.com"` is set so SNI matches the backend certificate name.
-- Middleware `dns-header` sets `Host: dns.markridgwell.com` on forwarded requests.
+- The original `Host: dns.markridgwell.com` header is forwarded unchanged, because Traefik's default `passHostHeader: true` applies.
 
-The `dns-01` to `dns-06` routes forward to HTTPS backends on port `53443` via the shared `serversTransports.dns-admin` transport, and each has a host-specific header middleware.
+The `dns-01` to `dns-06` routes forward to HTTPS backends on port `53443` via the shared `serversTransports.dns-admin` transport, and forward the original `Host` header unchanged.
 
 ### IPv6-aware routing
 
@@ -156,6 +162,10 @@ All services are accessible via HTTPS on port 443 with Let's Encrypt certificate
 - `github-api.markridgwell.com` → `http://192.168.150.15:3000`
 - `git-workflow.markridgwell.com` → `https://192.168.150.15:8081`
 
+### Key Management
+
+- `keys.markridgwell.com` → `https://192.168.150.220:8081`
+
 ### Monitoring
 
 - `monitoring.markridgwell.com` → `http://192.168.150.134:8428` — also available on port **457** (HTTP direct, POST only — see below)
@@ -168,8 +178,10 @@ Port 457 is the Cloudflare Tunnel origin for `monitoring.markridgwell.com`, inte
 
 - `home.markridgwell.com` → `http://192.168.150.150:8080` — also available on port **446** (HTTP direct)
 - `homeassistant.markridgwell.com` → `http://192.168.34.8:8123`
-- `audiobookshelf.markridgwell.com` → `http://192.168.150.16:8080`
+- `audiobookshelf.markridgwell.com` → `http://192.168.150.16:13378`
+- `familiar.markridgwell.com` → `http://192.168.150.129:8081` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 - `defi.markridgwell.com` → `https://192.168.150.12` — also available on port **447** (HTTP direct)
+- `cctv.markridgwell.com` → `https://192.168.60.180`
 
 ### Media
 
