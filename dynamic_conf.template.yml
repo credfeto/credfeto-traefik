@@ -1274,6 +1274,8 @@ http:
     # the host firewall: cloudflared reaches Traefik over loopback, which the
     # firewall does not filter, so loopback is deliberately excluded here.
     # No ipStrategy, so the TCP remote address is checked, not X-Forwarded-For.
+    # The LAN's own global IPv6 prefix is included because LAN hosts use
+    # global addresses, not ULA, so IPv6 LAN clients would otherwise get 403.
     internal-only:
       ipAllowList:
         sourceRange:
@@ -1282,6 +1284,7 @@ http:
           - "192.168.0.0/16"
           - "fc00::/7"
           - "fe80::/10"
+          - "2a02:8010:61d5::/48"
 
     # Middleware for each header
     pacman-header:
