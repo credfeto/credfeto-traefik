@@ -43,7 +43,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Deprecated
 ### Removed
 - IPv6 backend addresses from dns-01..dns-05 services; backends are IPv4-only for now
-- No-op Host-rewrite middlewares from the homeassistant and audiobookshelf routes (they set Host to the value the router already matches)
+- No-op Host-rewrite middlewares from the homeassistant, audiobookshelf, photos, dns and dns-01..dns-06, github-api, git-workflow, keys and monitoring routes (they set Host to the value the router already matches)
 ### Deployment Changes
 
 <!--
