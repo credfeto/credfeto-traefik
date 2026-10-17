@@ -82,9 +82,13 @@ http:
       rule: "Host(`my-service.markridgwell.com`)"
       service: my-service
       entryPoints:
-        - web-secure
+        - web-general
       tls:
         certResolver: letsencrypt
+        domains:
+          - main: "markridgwell.com"
+            sans:
+              - "*.markridgwell.com"
       middlewares:
         - my-header
 
@@ -101,6 +105,8 @@ http:
         customRequestHeaders:
           Host: "my-service.local"
 ```
+
+Every Let's Encrypt router carries the same `tls.domains` wildcard block so all routers share one `*.markridgwell.com` certificate. For a service that should only be reachable from the LAN, also add the existing `internal-only` middleware to the router's `middlewares` list.
 
 Traefik watches `dynamic_conf.yml` for changes and reloads automatically — no restart required for route or service changes. To apply template changes that alter `${PHOTOS_LOCAL_SECRET}` or other substituted values, re-run `./update`.
 
