@@ -217,8 +217,6 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
-      middlewares:
-        - photos-header
 
     homeassistant-router:
       rule: "Host(`homeassistant.markridgwell.com`)"
@@ -231,8 +229,6 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
-      middlewares:
-        - homeassistant-header
 
     audiobookshelf-router:
       rule: "Host(`audiobookshelf.markridgwell.com`)"
@@ -245,8 +241,20 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
+
+    familiar-router:
+      rule: "Host(`familiar.markridgwell.com`)"
+      service: familiar-service
+      entryPoints:
+        - web-general
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "markridgwell.com"
+            sans:
+              - "*.markridgwell.com"
       middlewares:
-        - audiobookshelf-header
+        - internal-only
 
     home-router:
       rule: "Host(`home.markridgwell.com`)"
@@ -411,8 +419,6 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
-      middlewares:
-        - dns-header
 
     dns-router:
       rule: "Host(`dns.markridgwell.com`)"
@@ -426,8 +432,6 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
-      middlewares:
-        - dns-header
 
     dns-01-router-v6:
       rule: "Host(`dns-01.markridgwell.com`) && ClientIP(`::/0`)"
@@ -441,8 +445,6 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
-      middlewares:
-        - dns-01-header
 
     dns-01-router:
       rule: "Host(`dns-01.markridgwell.com`)"
@@ -456,8 +458,6 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
-      middlewares:
-        - dns-01-header
 
     dns-02-router-v6:
       rule: "Host(`dns-02.markridgwell.com`) && ClientIP(`::/0`)"
@@ -471,8 +471,6 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
-      middlewares:
-        - dns-02-header
 
     dns-02-router:
       rule: "Host(`dns-02.markridgwell.com`)"
@@ -486,8 +484,6 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
-      middlewares:
-        - dns-02-header
 
     dns-03-router-v6:
       rule: "Host(`dns-03.markridgwell.com`) && ClientIP(`::/0`)"
@@ -501,8 +497,6 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
-      middlewares:
-        - dns-03-header
 
     dns-03-router:
       rule: "Host(`dns-03.markridgwell.com`)"
@@ -516,8 +510,6 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
-      middlewares:
-        - dns-03-header
 
     dns-04-router-v6:
       rule: "Host(`dns-04.markridgwell.com`) && ClientIP(`::/0`)"
@@ -531,8 +523,6 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
-      middlewares:
-        - dns-04-header
 
     dns-04-router:
       rule: "Host(`dns-04.markridgwell.com`)"
@@ -546,8 +536,6 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
-      middlewares:
-        - dns-04-header
 
     dns-05-router-v6:
       rule: "Host(`dns-05.markridgwell.com`) && ClientIP(`::/0`)"
@@ -561,8 +549,6 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
-      middlewares:
-        - dns-05-header
 
     dns-05-router:
       rule: "Host(`dns-05.markridgwell.com`)"
@@ -576,8 +562,6 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
-      middlewares:
-        - dns-05-header
 
     dns-06-router-v6:
       rule: "Host(`dns-06.markridgwell.com`) && ClientIP(`::/0`)"
@@ -591,8 +575,6 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
-      middlewares:
-        - dns-06-header
 
     dns-06-router:
       rule: "Host(`dns-06.markridgwell.com`)"
@@ -606,8 +588,6 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
-      middlewares:
-        - dns-06-header
 
     github-api-router:
       rule: "Host(`github-api.markridgwell.com`)"
@@ -620,8 +600,6 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
-      middlewares:
-        - github-api-header
 
     git-workflow-router:
       rule: "Host(`git-workflow.markridgwell.com`)"
@@ -634,8 +612,6 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
-      middlewares:
-        - git-workflow-header
 
     cctv-router:
       rule: "Host(`cctv.markridgwell.com`)"
@@ -662,8 +638,6 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
-      middlewares:
-        - keys-header
 
     monitoring-router:
       rule: "Host(`monitoring.markridgwell.com`)"
@@ -676,8 +650,6 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
-      middlewares:
-        - monitoring-header
 
     # Direct port routers (plain HTTP — TLS terminated by Cloudflare Tunnel)
     npm-direct-router:
@@ -702,7 +674,6 @@ http:
       entryPoints:
         - photos
       middlewares:
-        - photos-header
         - photos-local-check
 
     aur-direct-router:
@@ -750,8 +721,6 @@ http:
       service: monitoring-service
       entryPoints:
         - monitoring
-      middlewares:
-        - monitoring-header
 
 
   services:
@@ -844,6 +813,12 @@ http:
           # itself is published on 13378 (docker-compose.yml: "13378:80", host:container;
           # no network_mode: host, so 80 is unreachable from outside the container).
           - url: "http://192.168.150.16:13378"
+
+    familiar-service:
+      loadBalancer:
+        # No healthCheck: no unauthenticated health endpoint is known for this app.
+        servers:
+          - url: "http://192.168.150.129:8081"
 
     home-service:
       loadBalancer:
@@ -1295,6 +1270,23 @@ http:
           - url: "http://192.168.150.134:8428"
 
   middlewares:
+    # Enforces "internal only" in Traefik itself rather than relying solely on
+    # the host firewall: cloudflared reaches Traefik over loopback, which the
+    # firewall does not filter, so loopback is deliberately excluded here.
+    # No ipStrategy, so the TCP remote address is checked, not X-Forwarded-For.
+    # The LAN's own global IPv6 prefix is included because LAN hosts use
+    # global addresses, not ULA, so IPv6 LAN clients would otherwise get 403.
+    # Keep in sync with IPV4_RANGES/IPV6_RANGES in the update script.
+    internal-only:
+      ipAllowList:
+        sourceRange:
+          - "10.0.0.0/8"
+          - "172.16.0.0/12"
+          - "192.168.0.0/16"
+          - "fc00::/7"
+          - "fe80::/10"
+          - "2a02:8010:61d5::/48"
+
     # Middleware for each header
     pacman-header:
       headers:
@@ -1316,11 +1308,6 @@ http:
         customRequestHeaders:
           Host: "aur-repo.local"
 
-    photos-header:
-      headers:
-        customRequestHeaders:
-          Host: "photos.markridgwell.com"
-
     photos-local-check:
       plugin:
         traefik-api-token-middleware:
@@ -1329,16 +1316,6 @@ http:
           removeTokenNameOnFailure: true
           tokens:
             - "${PHOTOS_LOCAL_SECRET}"
-
-    homeassistant-header:
-      headers:
-        customRequestHeaders:
-          Host: "homeassistant.markridgwell.com"
-
-    audiobookshelf-header:
-      headers:
-        customRequestHeaders:
-          Host: "audiobookshelf.markridgwell.com"
 
     home-header:
       headers:
@@ -1411,65 +1388,10 @@ http:
         customRequestHeaders:
           Host: "builds.dotnet.local"
 
-    dns-header:
-      headers:
-        customRequestHeaders:
-          Host: "dns.markridgwell.com"
-
-    dns-01-header:
-      headers:
-        customRequestHeaders:
-          Host: "dns-01.markridgwell.com"
-
-    dns-02-header:
-      headers:
-        customRequestHeaders:
-          Host: "dns-02.markridgwell.com"
-
-    dns-03-header:
-      headers:
-        customRequestHeaders:
-          Host: "dns-03.markridgwell.com"
-
-    dns-04-header:
-      headers:
-        customRequestHeaders:
-          Host: "dns-04.markridgwell.com"
-
-    dns-05-header:
-      headers:
-        customRequestHeaders:
-          Host: "dns-05.markridgwell.com"
-
-    dns-06-header:
-      headers:
-        customRequestHeaders:
-          Host: "dns-06.markridgwell.com"
-
-    github-api-header:
-      headers:
-        customRequestHeaders:
-          Host: "github-api.markridgwell.com"
-
-    git-workflow-header:
-      headers:
-        customRequestHeaders:
-          Host: "git-workflow.markridgwell.com"
-
     cctv-header:
       headers:
         customRequestHeaders:
           Host: "cctv.local"
-
-    keys-header:
-      headers:
-        customRequestHeaders:
-          Host: "keys.markridgwell.com"
-
-    monitoring-header:
-      headers:
-        customRequestHeaders:
-          Host: "monitoring.markridgwell.com"
 
     hsts:
       headers:

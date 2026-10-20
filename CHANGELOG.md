@@ -25,6 +25,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Add health checks to photos, homeassistant, home, defi, linux-cache-01/02, dev-cache-01/02, github-api, cctv, keys and monitoring services (issue #37 Tier A/A'), each verified against the actual backend's own source or documented API behaviour
 - Added Traefik failover services so IPv6-only DNS routers fall back to the IPv4 backend pool when all IPv6 backends are unhealthy, instead of returning an error
 - Accept HTTP on port 80 and redirect it to HTTPS on all hosts
+- Internal-only route for familiar.markridgwell.com proxying to http://192.168.150.129:8081, restricted to private network ranges and the LAN's IPv6 prefix 2a02:8010:61d5::/48 (loopback excluded) by a new reusable internal-only middleware so it cannot be reached through Cloudflare Tunnel
 ### Fixed
 - YAML document start markers added to docker-compose.yml, dynamic_conf.template.yml, and traefik.yml to satisfy ansible-lint
 - watchtower missing a restart policy, leaving it stopped after a Docker daemon restart
@@ -34,13 +35,18 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - traefik.service failed to start on a real Arch host: /etc/traefik was root:root with no group/other access, blocking the traefik user's own systemd unit from even reading traefik.yml, dynamic_conf.yml was root:root 600 so traefik couldn't read its routing config either, and ACME storage was pointed at a subdirectory (/etc/traefik/acme/acme.json) that the packaged unit's ProtectSystem=strict/ReadWritePaths sandbox doesn't allow writing to; storage moved to the flat /etc/traefik/acme.json path the unit actually allow-lists, and update now sets correct ownership/permissions on all three
 - Every router relying on Let's Encrypt now explicitly declares the *.markridgwell.com wildcard as its certResolver domain, instead of leaving it unstated. Without an explicit domain, Traefik resolves each such router's certificate independently at startup, racing the wildcard's own issuance; on a cold cert store (no cached wildcard yet) this made every router request its own individual DNS-01 certificate in parallel, which failed outright for ollama.markridgwell.com since it has no public Cloudflare DNS zone (it's an internal-only host, never meant to get its own cert)
 - traefik-api-token-middleware (backing photos-local-check) failed to load: the packaged unit's ProtectSystem=strict leaves no writable working directory for the plugin's own plugins-storage folder, which took the plugin down and made photos-direct-router invalid entirely. update now gives traefik.service a real writable WorkingDirectory=/var/lib/traefik, allow-listed via an added ReadWritePaths=
+- README listed the wrong audiobookshelf backend port (8080, which is Dozzle); it now matches the proxy's 13378
+- README now documents the cctv.markridgwell.com and keys.markridgwell.com routes, which were missing from the service list
+- README "Adding a new service" example used a non-existent web-secure entrypoint and omitted the shared wildcard tls.domains block
 ### Changed
 - Re-addressed dns-01..dns-04 backends to 192.168.42.101-104 (was .251-.254) with new dual-stack IPv6 addresses 2a02:8010:61d5:42::101-104
 - Replaced the Docker-based deployment (traefik, cloudflared, watchtower containers) with native Arch Linux systemd services: traefik and cloudflared are now installed from pacman, traefik.yml is generated from a new traefik.template.yml, and pacman hooks restart each service when its package is upgraded, replacing watchtower's role
 ### Deprecated
 ### Removed
 - IPv6 backend addresses from dns-01..dns-05 services; backends are IPv4-only for now
+- No-op Host-rewrite middlewares from the homeassistant, audiobookshelf, photos, dns and dns-01..dns-06, github-api, git-workflow, keys and monitoring routes (they set Host to the value the router already matches)
 ### Deployment Changes
+- Firewall rules from ./update now also allow the LAN's global IPv6 prefix 2a02:8010:61d5::/48 to reach ports 80 and 443; re-run ./update to apply
 
 <!--
 Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch
