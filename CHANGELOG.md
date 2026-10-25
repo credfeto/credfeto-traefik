@@ -26,6 +26,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Added Traefik failover services so IPv6-only DNS routers fall back to the IPv4 backend pool when all IPv6 backends are unhealthy, instead of returning an error
 - Accept HTTP on port 80 and redirect it to HTTPS on all hosts
 - Internal-only route for familiar.markridgwell.com proxying to http://192.168.150.129:8081, restricted to private network ranges and the LAN's IPv6 prefix 2a02:8010:61d5::/48 (loopback excluded) by a new reusable internal-only middleware so it cannot be reached through Cloudflare Tunnel
+- TBD - to be finalized after review
 ### Fixed
 - YAML document start markers added to docker-compose.yml, dynamic_conf.template.yml, and traefik.yml to satisfy ansible-lint
 - watchtower missing a restart policy, leaving it stopped after a Docker daemon restart
