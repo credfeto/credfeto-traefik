@@ -52,6 +52,9 @@ http:
     git-workflow:
       insecureSkipVerify: true
       serverName: "git-workflow.markridgwell.com"
+    workflow-mcp:
+      insecureSkipVerify: true
+      serverName: "workflow-mcp.markridgwell.com"
     cctv:
       insecureSkipVerify: true
       serverName: "cctv.local"
@@ -604,6 +607,18 @@ http:
     git-workflow-router:
       rule: "Host(`git-workflow.markridgwell.com`)"
       service: git-workflow-service
+      entryPoints:
+        - web-general
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "markridgwell.com"
+            sans:
+              - "*.markridgwell.com"
+
+    workflow-mcp-router:
+      rule: "Host(`workflow-mcp.markridgwell.com`)"
+      service: workflow-mcp-service
       entryPoints:
         - web-general
       tls:
@@ -1234,6 +1249,16 @@ http:
           timeout: 5s
         servers:
           - url: "https://192.168.150.15:8081"
+
+    workflow-mcp-service:
+      loadBalancer:
+        serversTransport: workflow-mcp
+        healthCheck:
+          path: /ping
+          interval: 30s
+          timeout: 5s
+        servers:
+          - url: "https://192.168.150.15:8091"
 
     cctv-service:
       loadBalancer:
