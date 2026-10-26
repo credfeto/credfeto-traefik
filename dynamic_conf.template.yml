@@ -66,12 +66,6 @@ http:
       service: api@internal
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
       # No middleware for authentication now
 
     # API NuGet router
@@ -80,12 +74,6 @@ http:
       service: api-nuget-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
       middlewares:
         - api-nuget-header
 
@@ -95,12 +83,6 @@ http:
       service: funfair-nuget-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
       middlewares:
         - funfair-nuget-header
 
@@ -110,12 +92,6 @@ http:
       service: funfair-prerelease-nuget-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
       middlewares:
         - funfair-prerelease-nuget-header
 
@@ -125,12 +101,6 @@ http:
       service: npm-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
       middlewares:
         - npm-header
 
@@ -140,12 +110,6 @@ http:
       service: dotnet-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
       middlewares:
         - dotnet-header
 
@@ -155,12 +119,6 @@ http:
       service: pacman-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
       middlewares:
         - pacman-header
 
@@ -169,12 +127,6 @@ http:
       service: aur-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
       middlewares:
         - aur-header
 
@@ -183,12 +135,6 @@ http:
       service: flathub-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
       middlewares:
         - flathub-header
 
@@ -197,12 +143,6 @@ http:
       service: aur-repo-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
       middlewares:
         - aur-repo-header
 
@@ -211,48 +151,24 @@ http:
       service: photos-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
 
     homeassistant-router:
       rule: "Host(`homeassistant.markridgwell.com`)"
       service: homeassistant-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
 
     audiobookshelf-router:
       rule: "Host(`audiobookshelf.markridgwell.com`)"
       service: audiobookshelf-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
 
     familiar-router:
       rule: "Host(`familiar.markridgwell.com`)"
       service: familiar-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
       middlewares:
         - internal-only
 
@@ -261,12 +177,6 @@ http:
       service: home-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
       middlewares:
         - home-header
 
@@ -283,12 +193,6 @@ http:
       service: docker-registry-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
       middlewares:
         - docker-registry-header
 
@@ -305,12 +209,6 @@ http:
       service: docker-cache-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
       middlewares:
         - docker-cache-header
 
@@ -320,12 +218,6 @@ http:
       service: defi-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
       middlewares:
         - defi-header
 
@@ -342,12 +234,6 @@ http:
       service: ollama-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
       middlewares:
         - ollama-header
 
@@ -356,12 +242,6 @@ http:
       service: linux-cache-01-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
       middlewares:
         - linux-cache-01-header
 
@@ -370,12 +250,6 @@ http:
       service: linux-cache-02-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
       middlewares:
         - linux-cache-02-header
 
@@ -384,12 +258,6 @@ http:
       service: dev-cache-01-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
       middlewares:
         - dev-cache-01-header
 
@@ -398,12 +266,6 @@ http:
       service: dev-cache-02-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
       middlewares:
         - dev-cache-02-header
 
@@ -413,12 +275,6 @@ http:
       service: dns-service-v6-failover
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
 
     dns-router:
       rule: "Host(`dns.markridgwell.com`)"
@@ -426,12 +282,6 @@ http:
       service: dns-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
 
     dns-01-router-v6:
       rule: "Host(`dns-01.markridgwell.com`) && ClientIP(`::/0`)"
@@ -439,12 +289,6 @@ http:
       service: dns-01-service-v6-failover
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
 
     dns-01-router:
       rule: "Host(`dns-01.markridgwell.com`)"
@@ -452,12 +296,6 @@ http:
       service: dns-01-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
 
     dns-02-router-v6:
       rule: "Host(`dns-02.markridgwell.com`) && ClientIP(`::/0`)"
@@ -465,12 +303,6 @@ http:
       service: dns-02-service-v6-failover
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
 
     dns-02-router:
       rule: "Host(`dns-02.markridgwell.com`)"
@@ -478,12 +310,6 @@ http:
       service: dns-02-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
 
     dns-03-router-v6:
       rule: "Host(`dns-03.markridgwell.com`) && ClientIP(`::/0`)"
@@ -491,12 +317,6 @@ http:
       service: dns-03-service-v6-failover
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
 
     dns-03-router:
       rule: "Host(`dns-03.markridgwell.com`)"
@@ -504,12 +324,6 @@ http:
       service: dns-03-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
 
     dns-04-router-v6:
       rule: "Host(`dns-04.markridgwell.com`) && ClientIP(`::/0`)"
@@ -517,12 +331,6 @@ http:
       service: dns-04-service-v6-failover
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
 
     dns-04-router:
       rule: "Host(`dns-04.markridgwell.com`)"
@@ -530,12 +338,6 @@ http:
       service: dns-04-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
 
     dns-05-router-v6:
       rule: "Host(`dns-05.markridgwell.com`) && ClientIP(`::/0`)"
@@ -543,12 +345,6 @@ http:
       service: dns-05-service-v6-failover
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
 
     dns-05-router:
       rule: "Host(`dns-05.markridgwell.com`)"
@@ -556,12 +352,6 @@ http:
       service: dns-05-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
 
     dns-06-router-v6:
       rule: "Host(`dns-06.markridgwell.com`) && ClientIP(`::/0`)"
@@ -569,12 +359,6 @@ http:
       service: dns-06-service-v6-failover
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
 
     dns-06-router:
       rule: "Host(`dns-06.markridgwell.com`)"
@@ -582,48 +366,24 @@ http:
       service: dns-06-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
 
     github-api-router:
       rule: "Host(`github-api.markridgwell.com`)"
       service: github-api-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
 
     git-workflow-router:
       rule: "Host(`git-workflow.markridgwell.com`)"
       service: git-workflow-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
 
     cctv-router:
       rule: "Host(`cctv.markridgwell.com`)"
       service: cctv-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
       middlewares:
         - cctv-header
 
@@ -632,24 +392,12 @@ http:
       service: keys-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
 
     monitoring-router:
       rule: "Host(`monitoring.markridgwell.com`)"
       service: monitoring-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
 
     # Direct port routers (plain HTTP — TLS terminated by Cloudflare Tunnel)
     npm-direct-router:

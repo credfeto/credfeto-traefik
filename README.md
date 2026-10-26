@@ -83,12 +83,6 @@ http:
       service: my-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
       middlewares:
         - my-header
 
@@ -106,7 +100,7 @@ http:
           Host: "my-service.local"
 ```
 
-Every Let's Encrypt router carries the same `tls.domains` wildcard block so all routers share one `*.markridgwell.com` certificate. For a service that should only be reachable from the LAN, also add the existing `internal-only` middleware to the router's `middlewares` list.
+The `markridgwell.com` / `*.markridgwell.com` wildcard certificate is declared once, under `entryPoints.web-general.http.tls` in `traefik.template.yml`, so every router on the `web-general` entrypoint shares it. New `web-general` routers therefore need no `tls` block. For a service that should only be reachable from the LAN, also add the existing `internal-only` middleware to the router's `middlewares` list.
 
 Traefik watches `dynamic_conf.yml` for changes and reloads automatically — no restart required for route or service changes. To apply template changes that alter `${PHOTOS_LOCAL_SECRET}` or other substituted values, re-run `./update`.
 
