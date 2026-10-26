@@ -627,6 +627,8 @@ http:
           - main: "markridgwell.com"
             sans:
               - "*.markridgwell.com"
+      middlewares:
+        - internal-only
 
     cctv-router:
       rule: "Host(`cctv.markridgwell.com`)"
