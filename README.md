@@ -210,7 +210,6 @@ Port 450 is the Cloudflare Tunnel origin for `photos.markridgwell.com`. To preve
 
 ### Linux Package Mirrors
 
-- `aur.markridgwell.com` → `https://192.168.150.200:7776`, `https://192.168.150.201:7776` — also available on port **451** (HTTP direct)
 - `aur-repo.markridgwell.com` → `https://192.168.150.10:5555`, `https://192.168.150.20:5555`
 - `pacman.markridgwell.com` → `https://192.168.150.200:7777`, `https://192.168.150.201:7777` — also available on port **452** (HTTP direct)
 - `flathub.markridgwell.com` → `https://192.168.150.200:7777`, `https://192.168.150.201:7777` — also available on port **453** (HTTP direct)
@@ -235,7 +234,6 @@ route by hostname, and each rule maps to a single origin URL (including port).
 - **448** (TCP): NPM Registry — HTTP (Cloudflare Tunnel origin)
 - **449** (TCP): API NuGet Registry — HTTP (Cloudflare Tunnel origin)
 - **450** (TCP): Photos service — HTTP (Cloudflare Tunnel origin)
-- **451** (TCP): AUR Repository — HTTP (Cloudflare Tunnel origin)
 - **452** (TCP): Pacman Cache — HTTP (Cloudflare Tunnel origin)
 - **453** (TCP): Flathub Repository — HTTP (Cloudflare Tunnel origin)
 - **455** (TCP): FunFair NuGet Registry — HTTP (Cloudflare Tunnel origin)
