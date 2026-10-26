@@ -32,6 +32,10 @@ entryPoints:
     http:
       tls:
         certResolver: letsencrypt
+        domains:
+          - main: "markridgwell.com"
+            sans:
+              - "*.markridgwell.com"
       middlewares:
         - hsts@file
     http3: {}
