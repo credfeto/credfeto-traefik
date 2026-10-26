@@ -11,9 +11,6 @@ http:
     pacman:
       insecureSkipVerify: true
       serverName: "pacman.local"
-    aur:
-      insecureSkipVerify: true
-      serverName: "aur.local"
     aur-repo:
       insecureSkipVerify: true
       serverName: "aur-repo.local"
@@ -121,14 +118,6 @@ http:
         - web-general
       middlewares:
         - pacman-header
-
-    aur-router:
-      rule: "Host(`aur.markridgwell.com`)"
-      service: aur-service
-      entryPoints:
-        - web-general
-      middlewares:
-        - aur-header
 
     flathub-router:
       rule: "Host(`flathub.markridgwell.com`)"
@@ -424,14 +413,6 @@ http:
       middlewares:
         - photos-local-check
 
-    aur-direct-router:
-      rule: "Host(`aur.markridgwell.com`)"
-      service: aur-service
-      entryPoints:
-        - aur
-      middlewares:
-        - aur-header
-
     pacman-direct-router:
       rule: "Host(`pacman.markridgwell.com`)"
       service: pacman-service
@@ -491,17 +472,6 @@ http:
         servers:
           - url: "https://192.168.150.200:7777"
           - url: "https://192.168.150.201:7777"
-
-    aur-service:
-      loadBalancer:
-        serversTransport: aur
-        healthCheck:
-          path: /ping
-          interval: 30s
-          timeout: 5s
-        servers:
-          - url: "https://192.168.150.200:7776"
-          - url: "https://192.168.150.201:7776"
 
     flathub-service:
       loadBalancer:
@@ -1040,11 +1010,6 @@ http:
       headers:
         customRequestHeaders:
           Host: "pacman.local"
-
-    aur-header:
-      headers:
-        customRequestHeaders:
-          Host: "aur.local"
 
     flathub-header:
       headers:
