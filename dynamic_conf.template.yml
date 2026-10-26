@@ -376,12 +376,6 @@ http:
       service: workflow-mcp-service
       entryPoints:
         - web-general
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "markridgwell.com"
-            sans:
-              - "*.markridgwell.com"
       middlewares:
         - internal-only
 
