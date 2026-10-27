@@ -102,11 +102,13 @@ http:
 
 The `markridgwell.com` / `*.markridgwell.com` wildcard certificate is declared once, under `entryPoints.web-general.http.tls` in `traefik.template.yml`, so every router on the `web-general` entrypoint shares it. New `web-general` routers therefore need no `tls` block. For a service that should only be reachable from the LAN, also add the existing `internal-only` middleware to the router's `middlewares` list.
 
+The `internal-only` middleware is an `ipAllowList` that admits the private IPv4 ranges, IPv6 unique local and link-local addresses, and the LAN's global IPv6 prefix. It checks the TCP remote address of the connection, not `X-Forwarded-For`. Loopback is deliberately excluded: `cloudflared` connects to Traefik over loopback, so excluding it means requests arriving through Cloudflare Tunnel are refused with `403 Forbidden` on these hosts.
+
 Traefik watches `dynamic_conf.yml` for changes and reloads automatically — no restart required for route or service changes. To apply template changes that alter `${PHOTOS_LOCAL_SECRET}` or other substituted values, re-run `./update`.
 
 ## DNS services
 
-The following DNS routes are configured in `dynamic_conf.template.yml`:
+The following DNS routes are configured in `dynamic_conf.template.yml`. Every `dns*.markridgwell.com` router, both the `-v6` and the plain router, carries the `internal-only` middleware, so these hosts are not reachable through Cloudflare Tunnel:
 
 | Hostname | IPv4 upstream target | IPv6 upstream target |
 | -------- | --------------------- | --------------------- |
@@ -133,7 +135,7 @@ Each `dns*.markridgwell.com` host has two routers: a `-v6` router matching `Clie
 
 ## Dashboard
 
-The Traefik dashboard is available at `https://proxy.markridgwell.com` once running.
+The Traefik dashboard is available at `https://proxy.markridgwell.com` once running (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel).
 
 ## Services
 
@@ -141,25 +143,25 @@ All services are accessible via HTTPS on port 443 with Let's Encrypt certificate
 
 ### Development Cache Services
 
-- `dev-cache-01.markridgwell.com` → `http://192.168.150.100:8080`
-- `dev-cache-02.markridgwell.com` → `http://192.168.150.101:8080`
-- `linux-cache-01.markridgwell.com` → `http://192.168.150.200:8080`
-- `linux-cache-02.markridgwell.com` → `http://192.168.150.201:8080`
+- `dev-cache-01.markridgwell.com` → `http://192.168.150.100:8080` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
+- `dev-cache-02.markridgwell.com` → `http://192.168.150.101:8080` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
+- `linux-cache-01.markridgwell.com` → `http://192.168.150.200:8080` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
+- `linux-cache-02.markridgwell.com` → `http://192.168.150.201:8080` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 
 ### Docker Services
 
 - `docker-registry.markridgwell.com` → `http://192.168.150.202:8080` — also available on port **444** (HTTP direct)
-- `docker-cache.markridgwell.com` → `http://192.168.150.202:8081`
+- `docker-cache.markridgwell.com` → `http://192.168.150.202:8081` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 
 ### Git / Workflow Services
 
-- `github-api.markridgwell.com` → `http://192.168.150.15:3000`
-- `git-workflow.markridgwell.com` → `https://192.168.150.15:8081`
+- `github-api.markridgwell.com` → `http://192.168.150.15:3000` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
+- `git-workflow.markridgwell.com` → `https://192.168.150.15:8081` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 - `workflow-mcp.markridgwell.com` → `https://192.168.150.15:8091` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 
 ### Key Management
 
-- `keys.markridgwell.com` → `https://192.168.150.220:8081`
+- `keys.markridgwell.com` → `https://192.168.150.220:8081` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 
 ### Monitoring
 
@@ -172,11 +174,11 @@ Port 457 is the Cloudflare Tunnel origin for `monitoring.markridgwell.com`, inte
 ### Home Automation
 
 - `home.markridgwell.com` → `http://192.168.150.150:8080` — also available on port **446** (HTTP direct)
-- `homeassistant.markridgwell.com` → `http://192.168.34.8:8123`
-- `audiobookshelf.markridgwell.com` → `http://192.168.150.16:13378`
+- `homeassistant.markridgwell.com` → `http://192.168.34.8:8123` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
+- `audiobookshelf.markridgwell.com` → `http://192.168.150.16:13378` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 - `familiar.markridgwell.com` → `http://192.168.150.129:8081` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 - `defi.markridgwell.com` → `https://192.168.150.12` — also available on port **447** (HTTP direct)
-- `cctv.markridgwell.com` → `https://192.168.60.180`
+- `cctv.markridgwell.com` → `https://192.168.60.180` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 
 ### Media
 
@@ -203,15 +205,15 @@ Port 450 is the Cloudflare Tunnel origin for `photos.markridgwell.com`. To preve
 
 ### .NET Build Artefacts
 
-- `dotnet.markridgwell.com` → `https://192.168.150.100:5555`, `https://192.168.150.101:5555`
+- `dotnet.markridgwell.com` → `https://192.168.150.100:5555`, `https://192.168.150.101:5555` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 
 ### AI Services
 
-- `ollama.markridgwell.com` → `https://192.168.150.10:5555`, `https://192.168.150.20:5555`
+- `ollama.markridgwell.com` → `https://192.168.150.10:5555`, `https://192.168.150.20:5555` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 
 ### Linux Package Mirrors
 
-- `aur-repo.markridgwell.com` → `https://192.168.150.10:5555`, `https://192.168.150.20:5555`
+- `aur-repo.markridgwell.com` → `https://192.168.150.10:5555`, `https://192.168.150.20:5555` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 - `pacman.markridgwell.com` → `https://192.168.150.200:7777`, `https://192.168.150.201:7777` — also available on port **452** (HTTP direct)
 - `flathub.markridgwell.com` → `https://192.168.150.200:7777`, `https://192.168.150.201:7777` — also available on port **453** (HTTP direct)
 
