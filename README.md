@@ -155,6 +155,7 @@ All services are accessible via HTTPS on port 443 with Let's Encrypt certificate
 
 - `github-api.markridgwell.com` → `http://192.168.150.15:3000`
 - `git-workflow.markridgwell.com` → `https://192.168.150.15:8081`
+- `workflow-mcp.markridgwell.com` → `https://192.168.150.15:8091` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 
 ### Key Management
 
