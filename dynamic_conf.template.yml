@@ -66,6 +66,8 @@ http:
       service: api@internal
       entryPoints:
         - web-general
+      middlewares:
+        - internal-only
       # No middleware for authentication now
 
     # API NuGet router
@@ -112,6 +114,7 @@ http:
         - web-general
       middlewares:
         - dotnet-header
+        - internal-only
 
     # New hosts
     pacman-router:
@@ -137,6 +140,7 @@ http:
         - web-general
       middlewares:
         - aur-repo-header
+        - internal-only
 
     photos-router:
       rule: "Host(`photos.markridgwell.com`)"
@@ -149,12 +153,16 @@ http:
       service: homeassistant-service
       entryPoints:
         - web-general
+      middlewares:
+        - internal-only
 
     audiobookshelf-router:
       rule: "Host(`audiobookshelf.markridgwell.com`)"
       service: audiobookshelf-service
       entryPoints:
         - web-general
+      middlewares:
+        - internal-only
 
     familiar-router:
       rule: "Host(`familiar.markridgwell.com`)"
@@ -203,6 +211,7 @@ http:
         - web-general
       middlewares:
         - docker-cache-header
+        - internal-only
 
 
     defi-router:
@@ -228,6 +237,7 @@ http:
         - web-general
       middlewares:
         - ollama-header
+        - internal-only
 
     linux-cache-01-router:
       rule: "Host(`linux-cache-01.markridgwell.com`)"
@@ -236,6 +246,7 @@ http:
         - web-general
       middlewares:
         - linux-cache-01-header
+        - internal-only
 
     linux-cache-02-router:
       rule: "Host(`linux-cache-02.markridgwell.com`)"
@@ -244,6 +255,7 @@ http:
         - web-general
       middlewares:
         - linux-cache-02-header
+        - internal-only
 
     dev-cache-01-router:
       rule: "Host(`dev-cache-01.markridgwell.com`)"
@@ -252,6 +264,7 @@ http:
         - web-general
       middlewares:
         - dev-cache-01-header
+        - internal-only
 
     dev-cache-02-router:
       rule: "Host(`dev-cache-02.markridgwell.com`)"
@@ -260,6 +273,7 @@ http:
         - web-general
       middlewares:
         - dev-cache-02-header
+        - internal-only
 
     dns-router-v6:
       rule: "Host(`dns.markridgwell.com`) && ClientIP(`::/0`)"
@@ -267,6 +281,8 @@ http:
       service: dns-service-v6-failover
       entryPoints:
         - web-general
+      middlewares:
+        - internal-only
 
     dns-router:
       rule: "Host(`dns.markridgwell.com`)"
@@ -274,6 +290,8 @@ http:
       service: dns-service
       entryPoints:
         - web-general
+      middlewares:
+        - internal-only
 
     dns-01-router-v6:
       rule: "Host(`dns-01.markridgwell.com`) && ClientIP(`::/0`)"
@@ -281,6 +299,8 @@ http:
       service: dns-01-service-v6-failover
       entryPoints:
         - web-general
+      middlewares:
+        - internal-only
 
     dns-01-router:
       rule: "Host(`dns-01.markridgwell.com`)"
@@ -288,6 +308,8 @@ http:
       service: dns-01-service
       entryPoints:
         - web-general
+      middlewares:
+        - internal-only
 
     dns-02-router-v6:
       rule: "Host(`dns-02.markridgwell.com`) && ClientIP(`::/0`)"
@@ -295,6 +317,8 @@ http:
       service: dns-02-service-v6-failover
       entryPoints:
         - web-general
+      middlewares:
+        - internal-only
 
     dns-02-router:
       rule: "Host(`dns-02.markridgwell.com`)"
@@ -302,6 +326,8 @@ http:
       service: dns-02-service
       entryPoints:
         - web-general
+      middlewares:
+        - internal-only
 
     dns-03-router-v6:
       rule: "Host(`dns-03.markridgwell.com`) && ClientIP(`::/0`)"
@@ -309,6 +335,8 @@ http:
       service: dns-03-service-v6-failover
       entryPoints:
         - web-general
+      middlewares:
+        - internal-only
 
     dns-03-router:
       rule: "Host(`dns-03.markridgwell.com`)"
@@ -316,6 +344,8 @@ http:
       service: dns-03-service
       entryPoints:
         - web-general
+      middlewares:
+        - internal-only
 
     dns-04-router-v6:
       rule: "Host(`dns-04.markridgwell.com`) && ClientIP(`::/0`)"
@@ -323,6 +353,8 @@ http:
       service: dns-04-service-v6-failover
       entryPoints:
         - web-general
+      middlewares:
+        - internal-only
 
     dns-04-router:
       rule: "Host(`dns-04.markridgwell.com`)"
@@ -330,6 +362,8 @@ http:
       service: dns-04-service
       entryPoints:
         - web-general
+      middlewares:
+        - internal-only
 
     dns-05-router-v6:
       rule: "Host(`dns-05.markridgwell.com`) && ClientIP(`::/0`)"
@@ -337,6 +371,8 @@ http:
       service: dns-05-service-v6-failover
       entryPoints:
         - web-general
+      middlewares:
+        - internal-only
 
     dns-05-router:
       rule: "Host(`dns-05.markridgwell.com`)"
@@ -344,6 +380,8 @@ http:
       service: dns-05-service
       entryPoints:
         - web-general
+      middlewares:
+        - internal-only
 
     dns-06-router-v6:
       rule: "Host(`dns-06.markridgwell.com`) && ClientIP(`::/0`)"
@@ -351,6 +389,8 @@ http:
       service: dns-06-service-v6-failover
       entryPoints:
         - web-general
+      middlewares:
+        - internal-only
 
     dns-06-router:
       rule: "Host(`dns-06.markridgwell.com`)"
@@ -358,18 +398,24 @@ http:
       service: dns-06-service
       entryPoints:
         - web-general
+      middlewares:
+        - internal-only
 
     github-api-router:
       rule: "Host(`github-api.markridgwell.com`)"
       service: github-api-service
       entryPoints:
         - web-general
+      middlewares:
+        - internal-only
 
     git-workflow-router:
       rule: "Host(`git-workflow.markridgwell.com`)"
       service: git-workflow-service
       entryPoints:
         - web-general
+      middlewares:
+        - internal-only
 
     workflow-mcp-router:
       rule: "Host(`workflow-mcp.markridgwell.com`)"
@@ -386,12 +432,15 @@ http:
         - web-general
       middlewares:
         - cctv-header
+        - internal-only
 
     keys-router:
       rule: "Host(`keys.markridgwell.com`)"
       service: keys-service
       entryPoints:
         - web-general
+      middlewares:
+        - internal-only
 
     monitoring-router:
       rule: "Host(`monitoring.markridgwell.com`)"
