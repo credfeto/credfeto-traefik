@@ -49,6 +49,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - IPv6 backend addresses from dns-01..dns-05 services; backends are IPv4-only for now
 - No-op Host-rewrite middlewares from the homeassistant, audiobookshelf, photos, dns and dns-01..dns-06, github-api, git-workflow, keys and monitoring routes (they set Host to the value the router already matches)
 - Removed aur.markridgwell.com routing (routers, service, header middleware, transport and aur entrypoint on port 451)
+- Removed docker-registry.markridgwell.com routing as the registry is no longer running
 ### Deployment Changes
 - Firewall rules from ./update now also allow the LAN's global IPv6 prefix 2a02:8010:61d5::/48 to reach ports 80 and 443; re-run ./update to apply
 
