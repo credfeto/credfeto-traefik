@@ -150,7 +150,6 @@ All services are accessible via HTTPS on port 443 with Let's Encrypt certificate
 
 ### Docker Services
 
-- `docker-registry.markridgwell.com` → `http://192.168.150.202:8080` — also available on port **444** (HTTP direct)
 - `docker-cache.markridgwell.com` → `http://192.168.150.202:8081` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 
 ### Git / Workflow Services
@@ -231,7 +230,6 @@ The ports below are plain HTTP used as Cloudflare Tunnel origin services.
 **Each hostname must have its own dedicated port** — Cloudflare Tunnel ingress rules
 route by hostname, and each rule maps to a single origin URL (including port).
 
-- **444** (TCP): Docker Registry — HTTP (Cloudflare Tunnel origin)
 - **446** (TCP): Home Service — HTTP (Cloudflare Tunnel origin)
 - **447** (TCP): DeFi Service — HTTP (Cloudflare Tunnel origin)
 - **448** (TCP): NPM Registry — HTTP (Cloudflare Tunnel origin)
