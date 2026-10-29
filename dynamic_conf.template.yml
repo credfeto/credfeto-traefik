@@ -188,21 +188,6 @@ http:
       middlewares:
         - home-header
 
-    docker-registry-router:
-      rule: "Host(`docker-registry.markridgwell.com`)"
-      service: docker-registry-service
-      entryPoints:
-        - web-general
-      middlewares:
-        - docker-registry-header
-
-    docker-registry-http-router:
-      rule: "PathPrefix(`/`)"
-      service: docker-registry-service
-      entryPoints:
-        - web-docker-registry
-      middlewares:
-        - docker-registry-header
 
     docker-cache-router:
       rule: "Host(`docker-cache.markridgwell.com`)"
@@ -606,15 +591,6 @@ http:
           timeout: 5s
         servers:
           - url: "http://192.168.150.150:8080"
-
-    docker-registry-service:
-      loadBalancer:
-        healthCheck:
-          path: /v2/
-          interval: 30s
-          timeout: 5s
-        servers:
-          - url: "http://192.168.150.202:8080"
 
     docker-cache-service:
       loadBalancer:
@@ -1104,11 +1080,6 @@ http:
       headers:
         customRequestHeaders:
           Host: "home.local"
-
-    docker-registry-header:
-      headers:
-        customRequestHeaders:
-          Host: "docker-registry.local"
 
     docker-cache-header:
       headers:
