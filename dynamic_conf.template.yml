@@ -188,7 +188,6 @@ http:
       middlewares:
         - home-header
 
-
     docker-cache-router:
       rule: "Host(`docker-cache.markridgwell.com`)"
       service: docker-cache-service
