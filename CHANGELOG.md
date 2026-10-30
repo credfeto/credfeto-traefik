@@ -14,6 +14,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Set a 2-year HSTS header (includeSubDomains, preload) on all HTTPS responses
 - Applied the existing internal-only private-network ipAllowList middleware to every internal-only router (homeassistant, audiobookshelf, ollama, caches, git-workflow, github-api, keys, cctv, dotnet, aur-repo, dns and the Traefik dashboard), so these hosts are refused when reached through Cloudflare Tunnel via loopback; documented the behaviour in the README
 ### Added
+- memory.markridgwell.com (/dev and /netadmin Basic Memory MCP spaces, each with its own bearer token via traefik-api-token-middleware) and memory-wiki.markridgwell.com (basic auth) routing to the credfeto-memory-docker host (MEMORY_BACKEND); new required .env values MEMORY_BACKEND, MEMORY_DEV_TOKEN, MEMORY_NETADMIN_TOKEN, MEMORY_WIKI_USERS
 - docs/ folder with architecture diagram showing repository folder structure
 - cctv.markridgwell.com host routing to 192.168.60.180 over self-signed TLS
 - keys.markridgwell.com zone pointing at 192.168.150.220:8081 using the wildcard certificate

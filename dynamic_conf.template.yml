@@ -60,6 +60,37 @@ http:
       serverName: "keys.local"
 
   routers:
+    # Shared agent memory (credfeto-memory-docker): one Basic Memory MCP space per
+    # path prefix, each with its own bearer token, plus the wiki (basic auth).
+    memory-dev-router:
+      rule: "Host(`memory.markridgwell.com`) && PathPrefix(`/dev`)"
+      service: memory-dev-service
+      entryPoints:
+        - web-general
+      middlewares:
+        - internal-only
+        - memory-dev-auth
+        - memory-dev-strip
+
+    memory-netadmin-router:
+      rule: "Host(`memory.markridgwell.com`) && PathPrefix(`/netadmin`)"
+      service: memory-netadmin-service
+      entryPoints:
+        - web-general
+      middlewares:
+        - internal-only
+        - memory-netadmin-auth
+        - memory-netadmin-strip
+
+    memory-wiki-router:
+      rule: "Host(`memory-wiki.markridgwell.com`)"
+      service: memory-wiki-service
+      entryPoints:
+        - web-general
+      middlewares:
+        - internal-only
+        - memory-wiki-auth
+
     # Dashboard router
     traefik-dashboard:
       rule: "Host(`proxy.markridgwell.com`)"
@@ -497,6 +528,19 @@ http:
 
 
   services:
+    memory-dev-service:
+      loadBalancer:
+        servers:
+          - url: "http://${MEMORY_BACKEND}:8101"
+    memory-netadmin-service:
+      loadBalancer:
+        servers:
+          - url: "http://${MEMORY_BACKEND}:8102"
+    memory-wiki-service:
+      loadBalancer:
+        servers:
+          - url: "http://${MEMORY_BACKEND}:8103"
+
     # Services for each router
     pacman-service:
       loadBalancer:
@@ -1033,6 +1077,37 @@ http:
           - url: "http://192.168.150.134:8428"
 
   middlewares:
+    memory-dev-strip:
+      stripPrefix:
+        prefixes:
+          - /dev
+    memory-netadmin-strip:
+      stripPrefix:
+        prefixes:
+          - /netadmin
+    memory-dev-auth:
+      plugin:
+        traefik-api-token-middleware:
+          authenticationHeader: false
+          bearerHeader: true
+          bearerHeaderName: Authorization
+          removeHeadersOnSuccess: true
+          tokens:
+            - "${MEMORY_DEV_TOKEN}"
+    memory-netadmin-auth:
+      plugin:
+        traefik-api-token-middleware:
+          authenticationHeader: false
+          bearerHeader: true
+          bearerHeaderName: Authorization
+          removeHeadersOnSuccess: true
+          tokens:
+            - "${MEMORY_NETADMIN_TOKEN}"
+    memory-wiki-auth:
+      basicAuth:
+        users:
+          - "${MEMORY_WIKI_USERS}"
+
     # Enforces "internal only" in Traefik itself rather than relying solely on
     # the host firewall: cloudflared reaches Traefik over loopback, which the
     # firewall does not filter, so loopback is deliberately excluded here.
