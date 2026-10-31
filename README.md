@@ -56,7 +56,7 @@ MEMORY_WIKI_USERS=user:$2y$05$replace_me
 | `MEMORY_NETADMIN_TOKEN` | Yes | `./update` | Bearer token for the `memory.markridgwell.com/netadmin` space. Requests must include `Authorization: Bearer <value>`. Generate with `openssl rand -hex 32`. |
 | `MEMORY_WIKI_USERS` | Yes | `./update` | Basic auth user for `wiki.markridgwell.com`. One `htpasswd -nbB user 'password'` line, with single `$` characters and no quotes; holds one user only. |
 
-### 3. Start Traefik
+### 2. Start Traefik
 
 ```bash
 ./update
