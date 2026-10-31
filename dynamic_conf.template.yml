@@ -83,7 +83,7 @@ http:
         - memory-netadmin-strip
 
     memory-wiki-router:
-      rule: "Host(`memory-wiki.markridgwell.com`)"
+      rule: "Host(`wiki.markridgwell.com`)"
       service: memory-wiki-service
       entryPoints:
         - web-general
@@ -531,15 +531,15 @@ http:
     memory-dev-service:
       loadBalancer:
         servers:
-          - url: "http://${MEMORY_BACKEND}:8101"
+          - url: "http://192.168.150.30:8101"
     memory-netadmin-service:
       loadBalancer:
         servers:
-          - url: "http://${MEMORY_BACKEND}:8102"
+          - url: "http://192.168.150.30:8102"
     memory-wiki-service:
       loadBalancer:
         servers:
-          - url: "http://${MEMORY_BACKEND}:8103"
+          - url: "http://192.168.150.30:8103"
 
     # Services for each router
     pacman-service:

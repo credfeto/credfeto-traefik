@@ -14,3 +14,5 @@ This is an index of local instructions that apply to just this project.
 
 ## Instruction Files
 <!-- Locally Maintained -->
+
+* [documentation.instructions.md](documentation.instructions.md): load whenever `dynamic_conf.template.yml`, `traefik.template.yml`, `.env.example` or `update` changes, or a `.env` value is added, removed or renamed; covers keeping `README.md` in step with every route, host, path and port added, changed, removed or renamed in the Traefik templates, and keeping `.env.example` in step with every `.env` value
