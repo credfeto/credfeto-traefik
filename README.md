@@ -42,10 +42,6 @@ MEMORY_NETADMIN_TOKEN=your_memory_netadmin_token
 MEMORY_WIKI_USERS=user:$2y$05$replace_me
 ```
 
-Generate each memory token with `openssl rand -hex 32`. Generate `MEMORY_WIKI_USERS` with
-`htpasswd -nbB user 'password'`. It holds one user only, as a single line with single `$`
-characters and no quotes.
-
 `.env` is gitignored and will not be committed.
 
 ### Environment variables reference
