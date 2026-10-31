@@ -37,7 +37,14 @@ CLOUDFLARE_EMAIL=your@email.com
 CF_DNS_API_TOKEN=your_cloudflare_api_token
 CLOUDFLARE_TUNNEL_TOKEN=your_cloudflare_tunnel_token
 PHOTOS_LOCAL_SECRET=your_photos_shared_secret
+MEMORY_DEV_TOKEN=your_memory_dev_token
+MEMORY_NETADMIN_TOKEN=your_memory_netadmin_token
+MEMORY_WIKI_USERS=user:$2y$05$replace_me
 ```
+
+Generate each memory token with `openssl rand -hex 32`. Generate `MEMORY_WIKI_USERS` with
+`htpasswd -nbB user 'password'`. It holds one user only, as a single line with single `$`
+characters and no quotes.
 
 `.env` is gitignored and will not be committed.
 
@@ -49,6 +56,9 @@ PHOTOS_LOCAL_SECRET=your_photos_shared_secret
 | `CF_DNS_API_TOKEN` | Yes | `traefik` | Cloudflare DNS API token used by the ACME DNS challenge provider; read live from `.env` via `traefik.service`'s `EnvironmentFile=`. |
 | `CLOUDFLARE_TUNNEL_TOKEN` | Yes | `cloudflared` | Consumed once by `cloudflared service install` when `./update` first bootstraps the tunnel service; not re-read afterwards. |
 | `PHOTOS_LOCAL_SECRET` | Yes | `./update` | Shared secret injected into the photos router rule. Requests to port 450 must include `X-Local: <value>` matching this secret; unauthorized requests are rejected. Configure Cloudflare Tunnel to add this header on all requests to the photos origin. |
+| `MEMORY_DEV_TOKEN` | Yes | `./update` | Bearer token for the `memory.markridgwell.com/dev` space. Requests must include `Authorization: Bearer <value>`. Generate with `openssl rand -hex 32`. |
+| `MEMORY_NETADMIN_TOKEN` | Yes | `./update` | Bearer token for the `memory.markridgwell.com/netadmin` space. Requests must include `Authorization: Bearer <value>`. Generate with `openssl rand -hex 32`. |
+| `MEMORY_WIKI_USERS` | Yes | `./update` | Basic auth user for `wiki.markridgwell.com`. One `htpasswd -nbB user 'password'` line, with single `$` characters and no quotes; holds one user only. |
 
 ### 3. Start Traefik
 
@@ -209,6 +219,18 @@ Port 450 is the Cloudflare Tunnel origin for `photos.markridgwell.com`. To preve
 ### AI Services
 
 - `ollama.markridgwell.com` → `https://192.168.150.10:5555`, `https://192.168.150.20:5555` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
+- `memory.markridgwell.com/dev` → `http://192.168.150.30:8101` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel; bearer token required)
+- `memory.markridgwell.com/netadmin` → `http://192.168.150.30:8102` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel; bearer token required)
+- `wiki.markridgwell.com` → `http://192.168.150.30:8103` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel; basic auth required)
+
+#### AI Memory: per-space bearer tokens and wiki basic auth
+
+Each memory space on `memory.markridgwell.com` has its own path prefix and its own bearer token:
+
+- Traefik strips the path prefix (`/dev` or `/netadmin`) before forwarding the request to the space's backend.
+- The `traefik-api-token-middleware` plugin checks `Authorization: Bearer <token>` against that space's token (`MEMORY_DEV_TOKEN` or `MEMORY_NETADMIN_TOKEN`). It rejects requests without a matching token, and removes the header before forwarding when the token matches.
+
+`wiki.markridgwell.com` uses Traefik basic auth with the single user in `MEMORY_WIKI_USERS`.
 
 ### Linux Package Mirrors
 
