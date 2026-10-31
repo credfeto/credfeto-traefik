@@ -83,7 +83,7 @@ http:
         - memory-netadmin-strip
 
     memory-wiki-router:
-      rule: "Host(`memory-wiki.markridgwell.com`)"
+      rule: "Host(`wiki.markridgwell.com`)"
       service: memory-wiki-service
       entryPoints:
         - web-general
