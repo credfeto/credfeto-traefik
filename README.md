@@ -57,7 +57,7 @@ PHOTOS_LOCAL_SECRET=your_photos_x_local_secret
 | `PHOTOS_LOCAL_SECRET` | Yes | `./update` | Shared secret injected into the photos router rule. Requests to port 450 must include `X-Local: <value>` matching this secret; unauthorised requests are rejected. Configure Cloudflare Tunnel to add this header on all requests to the photos origin. |
 | `MEMORY_DEV_TOKEN` | Yes | `./update` | Bearer token for the `memory.markridgwell.com/dev` space. Requests must include `Authorization: Bearer <value>`. Generate with `openssl rand -hex 32`. |
 | `MEMORY_NETADMIN_TOKEN` | Yes | `./update` | Bearer token for the `memory.markridgwell.com/netadmin` space. Requests must include `Authorization: Bearer <value>`. Generate with `openssl rand -hex 32`. |
-| `MEMORY_WIKI_USERS` | Yes | `./update` | Basic auth user for `wiki.markridgwell.com`. One `htpasswd -nbB user 'password'` line, with single `$` characters and no quotes; holds one user only. |
+| `MEMORY_WIKI_USERS` | Yes | `./update` | Basic auth user for `wiki.markridgwell.com`. One `htpasswd -nbB mark '<password>'` line, with single `$` characters and no quotes; holds one user only. |
 
 ### 2. Start Traefik
 
