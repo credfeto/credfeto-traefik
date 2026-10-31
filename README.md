@@ -71,8 +71,8 @@ rules, bootstraps the cloudflared tunnel service on first run, and enables/start
 
 | File | Purpose |
 | ---- | ------- |
-| `traefik.template.yml` | Static configuration template — entrypoints, ACME, providers; committed to git |
-| `dynamic_conf.template.yml` | Dynamic configuration template — routers, services, middlewares; committed to git |
+| `traefik.template.yml` | Static configuration template: entrypoints, ACME, providers; committed to git |
+| `dynamic_conf.template.yml` | Dynamic configuration template: routers, services, middlewares; committed to git |
 | `/etc/traefik/traefik.yml` | Generated from `traefik.template.yml` by `./update`; deployed on the host, never committed |
 | `/etc/traefik/dynamic_conf.yml` | Generated from `dynamic_conf.template.yml` by `./update`; deployed on the host, never committed |
 | `/etc/traefik/acme.json` | Let's Encrypt certificate storage |
@@ -110,7 +110,7 @@ The `markridgwell.com` / `*.markridgwell.com` wildcard certificate is declared o
 
 The `internal-only` middleware is an `ipAllowList` that admits the private IPv4 ranges, IPv6 unique local and link-local addresses, and the LAN's global IPv6 prefix. It checks the TCP remote address of the connection, not `X-Forwarded-For`. Loopback is deliberately excluded: `cloudflared` connects to Traefik over loopback, so excluding it means requests arriving through Cloudflare Tunnel are refused with `403 Forbidden` on these hosts.
 
-Traefik watches `dynamic_conf.yml` for changes and reloads automatically — no restart required for route or service changes. To apply template changes that alter `${PHOTOS_LOCAL_SECRET}` or other substituted values, re-run `./update`.
+Traefik watches `dynamic_conf.yml` for changes and reloads automatically; no restart required for route or service changes. To apply template changes that alter `${PHOTOS_LOCAL_SECRET}` or other substituted values, re-run `./update`.
 
 ## DNS services
 
@@ -137,7 +137,7 @@ The `dns-01` to `dns-06` routes forward to HTTPS backends on port `53443` via th
 
 ### IPv6-aware routing
 
-Each `dns*.markridgwell.com` host has two routers: a `-v6` router matching `ClientIP(`::/0`)` at `priority: 100`, and the plain `Host()` router at `priority: 1` as the fallback. A request arriving over IPv6 matches the `-v6` router and is forwarded to the `-v6` service (the IPv6 backend addresses above); everything else — IPv4 clients, or any host without a `-v6` router defined — falls through to the plain router and IPv4 backend. This requires the client's real IP to reach Traefik unmodified; it relies on `forwardedHeaders.trustedIPs` in `traefik.yml` being scoped to private ranges only, so a public client's `ClientIP()` reflects their actual connection rather than a spoofable header.
+Each `dns*.markridgwell.com` host has two routers: a `-v6` router matching `ClientIP(`::/0`)` at `priority: 100`, and the plain `Host()` router at `priority: 1` as the fallback. A request arriving over IPv6 matches the `-v6` router and is forwarded to the `-v6` service (the IPv6 backend addresses above); everything else (IPv4 clients, or any host without a `-v6` router defined) falls through to the plain router and IPv4 backend. This requires the client's real IP to reach Traefik unmodified; it relies on `forwardedHeaders.trustedIPs` in `traefik.yml` being scoped to private ranges only, so a public client's `ClientIP()` reflects their actual connection rather than a spoofable header.
 
 ## Dashboard
 
@@ -170,26 +170,26 @@ All services are accessible via HTTPS on port 443 with Let's Encrypt certificate
 
 ### Monitoring
 
-- `monitoring.markridgwell.com` → `http://192.168.150.134:8428` — also available on port **457** (HTTP direct, POST only — see below)
+- `monitoring.markridgwell.com` → `http://192.168.150.134:8428`, also available on port **457** (HTTP direct, POST only; see below)
 
-#### Monitoring — write-only direct port (457)
+#### Monitoring: write-only direct port (457)
 
 Port 457 is the Cloudflare Tunnel origin for `monitoring.markridgwell.com`, intended for remote Telegraf agents to push metrics into VictoriaMetrics, which has no built-in authentication. The router on port 457 only matches `POST` requests (`` Method(`POST`) ``); any other method (queries, deletes, admin calls) does not match the route and is rejected. The main `:443` route is unrestricted, for querying/dashboard access.
 
 ### Home Automation
 
-- `home.markridgwell.com` → `http://192.168.150.150:8080` — also available on port **446** (HTTP direct)
+- `home.markridgwell.com` → `http://192.168.150.150:8080`, also available on port **446** (HTTP direct)
 - `homeassistant.markridgwell.com` → `http://192.168.34.8:8123` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 - `audiobookshelf.markridgwell.com` → `http://192.168.150.16:13378` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 - `familiar.markridgwell.com` → `http://192.168.150.129:8081` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
-- `defi.markridgwell.com` → `https://192.168.150.12` — also available on port **447** (HTTP direct)
+- `defi.markridgwell.com` → `https://192.168.150.12`, also available on port **447** (HTTP direct)
 - `cctv.markridgwell.com` → `https://192.168.60.180` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 
 ### Media
 
-- `photos.markridgwell.com` → `http://192.168.150.154:2283` — also available on port **450** (HTTP direct, X-Local header required)
+- `photos.markridgwell.com` → `http://192.168.150.154:2283`, also available on port **450** (HTTP direct, X-Local header required)
 
-#### Photos — X-Local header authentication (port 450)
+#### Photos: X-Local header authentication (port 450)
 
 Port 450 is the Cloudflare Tunnel origin for `photos.markridgwell.com`. To prevent direct access that bypasses Cloudflare, Traefik validates a shared-secret header on all requests arriving on this port:
 
@@ -200,13 +200,13 @@ Port 450 is the Cloudflare Tunnel origin for `photos.markridgwell.com`. To preve
 
 ### NuGet Registries
 
-- `api-nuget.markridgwell.com` → `https://192.168.150.100:5555`, `https://192.168.150.101:5555` — also available on port **449** (HTTP direct)
-- `funfair-nuget.markridgwell.com` → `https://192.168.150.100:5555`, `https://192.168.150.101:5555` — also available on port **455** (HTTP direct)
-- `funfair-prerelease-nuget.markridgwell.com` → `https://192.168.150.100:5555`, `https://192.168.150.101:5555` — also available on port **456** (HTTP direct)
+- `api-nuget.markridgwell.com` → `https://192.168.150.100:5555`, `https://192.168.150.101:5555`, also available on port **449** (HTTP direct)
+- `funfair-nuget.markridgwell.com` → `https://192.168.150.100:5555`, `https://192.168.150.101:5555`, also available on port **455** (HTTP direct)
+- `funfair-prerelease-nuget.markridgwell.com` → `https://192.168.150.100:5555`, `https://192.168.150.101:5555`, also available on port **456** (HTTP direct)
 
 ### NPM Registry
 
-- `npm.markridgwell.com` → `https://192.168.150.100:5555`, `https://192.168.150.101:5555` — also available on port **448** (HTTP direct)
+- `npm.markridgwell.com` → `https://192.168.150.100:5555`, `https://192.168.150.101:5555`, also available on port **448** (HTTP direct)
 
 ### .NET Build Artefacts
 
@@ -231,33 +231,33 @@ Each memory space on `memory.markridgwell.com` has its own path prefix and its o
 ### Linux Package Mirrors
 
 - `aur-repo.markridgwell.com` → `https://192.168.150.10:5555`, `https://192.168.150.20:5555` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
-- `pacman.markridgwell.com` → `https://192.168.150.200:7777`, `https://192.168.150.201:7777` — also available on port **452** (HTTP direct)
-- `flathub.markridgwell.com` → `https://192.168.150.200:7777`, `https://192.168.150.201:7777` — also available on port **453** (HTTP direct)
+- `pacman.markridgwell.com` → `https://192.168.150.200:7777`, `https://192.168.150.201:7777`, also available on port **452** (HTTP direct)
+- `flathub.markridgwell.com` → `https://192.168.150.200:7777`, `https://192.168.150.201:7777`, also available on port **453** (HTTP direct)
 
 ## Port Mappings
 
 The following table lists all exposed ports and their purposes:
 
-- **80** (TCP): HTTP entrypoint — redirects every request to the 443 entrypoint over HTTPS
-- **443** (TCP/UDP): HTTPS entrypoint — all services with Let's Encrypt TLS + HTTP/3
+- **80** (TCP): HTTP entrypoint; redirects every request to the 443 entrypoint over HTTPS
+- **443** (TCP/UDP): HTTPS entrypoint; all services with Let's Encrypt TLS + HTTP/3
 
 All HTTPS responses on port 443 carry a `Strict-Transport-Security` header
 (`max-age=63072000; includeSubDomains; preload`, i.e. 2 years).
 
 The ports below are plain HTTP used as Cloudflare Tunnel origin services.
-**Each hostname must have its own dedicated port** — Cloudflare Tunnel ingress rules
+**Each hostname must have its own dedicated port**: Cloudflare Tunnel ingress rules
 route by hostname, and each rule maps to a single origin URL (including port).
 
-- **446** (TCP): Home Service — HTTP (Cloudflare Tunnel origin)
-- **447** (TCP): DeFi Service — HTTP (Cloudflare Tunnel origin)
-- **448** (TCP): NPM Registry — HTTP (Cloudflare Tunnel origin)
-- **449** (TCP): API NuGet Registry — HTTP (Cloudflare Tunnel origin)
-- **450** (TCP): Photos service — HTTP (Cloudflare Tunnel origin)
-- **452** (TCP): Pacman Cache — HTTP (Cloudflare Tunnel origin)
-- **453** (TCP): Flathub Repository — HTTP (Cloudflare Tunnel origin)
-- **455** (TCP): FunFair NuGet Registry — HTTP (Cloudflare Tunnel origin)
-- **456** (TCP): FunFair Pre-release NuGet Registry — HTTP (Cloudflare Tunnel origin)
-- **457** (TCP): Monitoring — HTTP (Cloudflare Tunnel origin)
+- **446** (TCP): Home Service, HTTP (Cloudflare Tunnel origin)
+- **447** (TCP): DeFi Service, HTTP (Cloudflare Tunnel origin)
+- **448** (TCP): NPM Registry, HTTP (Cloudflare Tunnel origin)
+- **449** (TCP): API NuGet Registry, HTTP (Cloudflare Tunnel origin)
+- **450** (TCP): Photos service, HTTP (Cloudflare Tunnel origin)
+- **452** (TCP): Pacman Cache, HTTP (Cloudflare Tunnel origin)
+- **453** (TCP): Flathub Repository, HTTP (Cloudflare Tunnel origin)
+- **455** (TCP): FunFair NuGet Registry, HTTP (Cloudflare Tunnel origin)
+- **456** (TCP): FunFair Pre-release NuGet Registry, HTTP (Cloudflare Tunnel origin)
+- **457** (TCP): Monitoring, HTTP (Cloudflare Tunnel origin)
 
 TLS is terminated by Cloudflare on the public side. Traefik does not re-encrypt
 the internal leg from `cloudflared` to itself.
