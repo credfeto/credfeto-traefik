@@ -35,7 +35,6 @@ check_env_var CLOUDFLARE_EMAIL
 check_env_var CF_DNS_API_TOKEN
 check_env_var CLOUDFLARE_TUNNEL_TOKEN
 check_env_var PHOTOS_LOCAL_SECRET
-check_env_var MEMORY_BACKEND
 check_env_var MEMORY_DEV_TOKEN
 check_env_var MEMORY_NETADMIN_TOKEN
 check_env_var MEMORY_WIKI_USERS
@@ -71,7 +70,6 @@ chmod 750 /etc/traefik || die "Failed to set permissions on /etc/traefik"
 
 CLOUDFLARE_EMAIL=$(grep -E "^CLOUDFLARE_EMAIL=" .env | cut -d '=' -f2-)
 PHOTOS_LOCAL_SECRET=$(grep -E "^PHOTOS_LOCAL_SECRET=" .env | cut -d '=' -f2-)
-MEMORY_BACKEND=$(grep -E "^MEMORY_BACKEND=" .env | cut -d '=' -f2-)
 MEMORY_DEV_TOKEN=$(grep -E "^MEMORY_DEV_TOKEN=" .env | cut -d '=' -f2-)
 MEMORY_NETADMIN_TOKEN=$(grep -E "^MEMORY_NETADMIN_TOKEN=" .env | cut -d '=' -f2-)
 MEMORY_WIKI_USERS=$(grep -E "^MEMORY_WIKI_USERS=" .env | cut -d '=' -f2-)
@@ -92,9 +90,9 @@ rm -f "${rendered_traefik_yml}"
 
 # shellcheck disable=SC2016
 PHOTOS_LOCAL_SECRET="${PHOTOS_LOCAL_SECRET}" \
-MEMORY_BACKEND="${MEMORY_BACKEND}" MEMORY_DEV_TOKEN="${MEMORY_DEV_TOKEN}" \
+MEMORY_DEV_TOKEN="${MEMORY_DEV_TOKEN}" \
 MEMORY_NETADMIN_TOKEN="${MEMORY_NETADMIN_TOKEN}" MEMORY_WIKI_USERS="${MEMORY_WIKI_USERS}" \
-envsubst '${PHOTOS_LOCAL_SECRET} ${MEMORY_BACKEND} ${MEMORY_DEV_TOKEN} ${MEMORY_NETADMIN_TOKEN} ${MEMORY_WIKI_USERS}' \
+envsubst '${PHOTOS_LOCAL_SECRET} ${MEMORY_DEV_TOKEN} ${MEMORY_NETADMIN_TOKEN} ${MEMORY_WIKI_USERS}' \
     < dynamic_conf.template.yml > /etc/traefik/dynamic_conf.yml \
     || die "Failed to generate dynamic_conf.yml"
 # traefik (not root) reads this at runtime via the file provider, and it
