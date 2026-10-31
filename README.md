@@ -33,13 +33,16 @@ cp .env.example .env
 Edit `.env`:
 
 ```env
-CLOUDFLARE_EMAIL=your@email.com
 CF_DNS_API_TOKEN=your_cloudflare_api_token
+CLOUDFLARE_EMAIL=your@email.com
 CLOUDFLARE_TUNNEL_TOKEN=your_cloudflare_tunnel_token
-PHOTOS_LOCAL_SECRET=your_photos_shared_secret
+# Shared agent memory (credfeto-memory-docker): one bearer token per space
+# (openssl rand -hex 32), and the wiki's htpasswd line
+# (htpasswd -nbB mark '<password>'; single $ here, this file is not compose).
 MEMORY_DEV_TOKEN=your_memory_dev_token
 MEMORY_NETADMIN_TOKEN=your_memory_netadmin_token
-MEMORY_WIKI_USERS=user:$2y$05$replace_me
+MEMORY_WIKI_USERS=mark:$2y$05$replace_me
+PHOTOS_LOCAL_SECRET=your_photos_x_local_secret
 ```
 
 `.env` is gitignored and will not be committed.
