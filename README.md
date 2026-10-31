@@ -51,7 +51,7 @@ MEMORY_WIKI_USERS=user:$2y$05$replace_me
 | `CLOUDFLARE_EMAIL` | Yes | `traefik` | Templated into `traefik.yml`'s `certificatesResolvers.letsencrypt.acme.email` for Let's Encrypt registration. |
 | `CF_DNS_API_TOKEN` | Yes | `traefik` | Cloudflare DNS API token used by the ACME DNS challenge provider; read live from `.env` via `traefik.service`'s `EnvironmentFile=`. |
 | `CLOUDFLARE_TUNNEL_TOKEN` | Yes | `cloudflared` | Consumed once by `cloudflared service install` when `./update` first bootstraps the tunnel service; not re-read afterwards. |
-| `PHOTOS_LOCAL_SECRET` | Yes | `./update` | Shared secret injected into the photos router rule. Requests to port 450 must include `X-Local: <value>` matching this secret; unauthorized requests are rejected. Configure Cloudflare Tunnel to add this header on all requests to the photos origin. |
+| `PHOTOS_LOCAL_SECRET` | Yes | `./update` | Shared secret injected into the photos router rule. Requests to port 450 must include `X-Local: <value>` matching this secret; unauthorised requests are rejected. Configure Cloudflare Tunnel to add this header on all requests to the photos origin. |
 | `MEMORY_DEV_TOKEN` | Yes | `./update` | Bearer token for the `memory.markridgwell.com/dev` space. Requests must include `Authorization: Bearer <value>`. Generate with `openssl rand -hex 32`. |
 | `MEMORY_NETADMIN_TOKEN` | Yes | `./update` | Bearer token for the `memory.markridgwell.com/netadmin` space. Requests must include `Authorization: Bearer <value>`. Generate with `openssl rand -hex 32`. |
 | `MEMORY_WIKI_USERS` | Yes | `./update` | Basic auth user for `wiki.markridgwell.com`. One `htpasswd -nbB user 'password'` line, with single `$` characters and no quotes; holds one user only. |
@@ -126,7 +126,7 @@ The following DNS routes are configured in `dynamic_conf.template.yml`. Every `d
 | `dns-05.markridgwell.com` | `https://192.168.42.105:53443` | `https://[2a02:8010:61d5:42::105]:53443` |
 | `dns-06.markridgwell.com` | `https://192.168.42.106:53443` | `https://[2a02:8010:61d5:42::106]:53443` |
 
-### TLS and Host behavior for `dns.markridgwell.com`
+### TLS and Host behaviour for `dns.markridgwell.com`
 
 - Upstream TLS uses a dedicated `serversTransports.dns` transport.
 - `insecureSkipVerify: true` is enabled to allow self-signed backend certificates.
