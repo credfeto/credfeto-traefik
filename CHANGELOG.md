@@ -14,7 +14,6 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Set a 2-year HSTS header (includeSubDomains, preload) on all HTTPS responses
 - Applied the existing internal-only private-network ipAllowList middleware to every internal-only router (homeassistant, audiobookshelf, ollama, caches, git-workflow, github-api, keys, cctv, dotnet, aur-repo, dns and the Traefik dashboard), so these hosts are refused when reached through Cloudflare Tunnel via loopback; documented the behaviour in the README
 ### Added
-- memory.markridgwell.com (/dev and /netadmin Basic Memory MCP spaces, each with its own bearer token via traefik-api-token-middleware) and memory-wiki.markridgwell.com (basic auth) routing to the credfeto-memory-docker host (MEMORY_BACKEND); new required .env values MEMORY_BACKEND, MEMORY_DEV_TOKEN, MEMORY_NETADMIN_TOKEN, MEMORY_WIKI_USERS
 - docs/ folder with architecture diagram showing repository folder structure
 - cctv.markridgwell.com host routing to 192.168.60.180 over self-signed TLS
 - keys.markridgwell.com zone pointing at 192.168.150.220:8081 using the wildcard certificate
@@ -29,6 +28,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Accept HTTP on port 80 and redirect it to HTTPS on all hosts
 - Internal-only route for familiar.markridgwell.com proxying to http://192.168.150.129:8081, restricted to private network ranges and the LAN's IPv6 prefix 2a02:8010:61d5::/48 (loopback excluded) by a new reusable internal-only middleware so it cannot be reached through Cloudflare Tunnel
 - Workflow MCP server reachable at workflow-mcp.markridgwell.com, restricted to the internal network so it cannot be reached through Cloudflare Tunnel
+- memory.markridgwell.com (/dev and /netadmin Basic Memory MCP spaces, each with its own bearer token via traefik-api-token-middleware) and wiki.markridgwell.com (basic auth) routing to the credfeto-memory-docker host at 192.168.150.30; new required .env values MEMORY_DEV_TOKEN, MEMORY_NETADMIN_TOKEN, MEMORY_WIKI_USERS
 ### Fixed
 - YAML document start markers added to docker-compose.yml, dynamic_conf.template.yml, and traefik.yml to satisfy ansible-lint
 - watchtower missing a restart policy, leaving it stopped after a Docker daemon restart
@@ -45,7 +45,6 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Re-addressed dns-01..dns-04 backends to 192.168.42.101-104 (was .251-.254) with new dual-stack IPv6 addresses 2a02:8010:61d5:42::101-104
 - Replaced the Docker-based deployment (traefik, cloudflared, watchtower containers) with native Arch Linux systemd services: traefik and cloudflared are now installed from pacman, traefik.yml is generated from a new traefik.template.yml, and pacman hooks restart each service when its package is upgraded, replacing watchtower's role
 - Declare wildcard TLS domains once on the web-general entrypoint instead of repeating them on every router
-- TBD - to be finalized after review
 ### Deprecated
 ### Removed
 - IPv6 backend addresses from dns-01..dns-05 services; backends are IPv4-only for now
