@@ -5,6 +5,11 @@ tls:
     default:
       minVersion: VersionTLS13
       sniStrict: true
+    # The TRMNL device firmware (ESP32 mbedTLS) only speaks TLS 1.2
+    # (CONFIG_MBEDTLS_SSL_PROTO_TLS1_3 is not set), so its host allows 1.2.
+    tls12:
+      minVersion: VersionTLS12
+      sniStrict: true
 
 http:
   serversTransports:
@@ -190,6 +195,26 @@ http:
     audiobookshelf-router:
       rule: "Host(`audiobookshelf.markridgwell.com`)"
       service: audiobookshelf-service
+      entryPoints:
+        - web-general
+      middlewares:
+        - internal-only
+
+    # TRMNL e-ink server (credfeto-trmnl, LaraPaper) and its local mirror of the
+    # TRMNL framework CSS/JS/fonts. Internal only.
+    trmnl-router:
+      rule: "Host(`trmnl.markridgwell.com`)"
+      service: trmnl-service
+      entryPoints:
+        - web-general
+      middlewares:
+        - internal-only
+      tls:
+        options: tls12
+
+    trmnl-assets-router:
+      rule: "Host(`trmnl-assets.markridgwell.com`)"
+      service: trmnl-assets-service
       entryPoints:
         - web-general
       middlewares:
@@ -620,6 +645,15 @@ http:
           # no network_mode: host, so 80 is unreachable from outside the container).
           - url: "http://192.168.150.16:13378"
 
+    trmnl-service:
+      loadBalancer:
+        # No healthCheck: LaraPaper has no unauthenticated health endpoint known here.
+        servers:
+          - url: "http://192.168.150.31:8080"
+    trmnl-assets-service:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.150.31:8081"
     familiar-service:
       loadBalancer:
         # No healthCheck: no unauthenticated health endpoint is known for this app.
