@@ -38,6 +38,7 @@ check_env_var PHOTOS_LOCAL_SECRET
 check_env_var MEMORY_DEV_TOKEN
 check_env_var MEMORY_NETADMIN_TOKEN
 check_env_var MEMORY_WIKI_USERS
+check_env_var LAN_IPV6_PREFIX
 
 # 1. Pull latest config
 info "Pulling latest config..."
@@ -74,6 +75,20 @@ MEMORY_DEV_TOKEN=$(grep -E "^MEMORY_DEV_TOKEN=" .env | cut -d '=' -f2-)
 MEMORY_NETADMIN_TOKEN=$(grep -E "^MEMORY_NETADMIN_TOKEN=" .env | cut -d '=' -f2-)
 MEMORY_WIKI_USERS=$(grep -E "^MEMORY_WIKI_USERS=" .env | cut -d '=' -f2-)
 
+# LAN ranges, defined once: used for both the firewall rules (step 8) and the
+# internal-only middleware's sourceRange in dynamic_conf.yml. The LAN's global
+# IPv6 prefix comes from .env because LAN clients use it rather than ULA/link-local.
+LAN_IPV6_PREFIX=$(grep -E "^LAN_IPV6_PREFIX=" .env | cut -d '=' -f2-)
+IPV4_RANGES="10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
+IPV6_RANGES="fc00::/7 fe80::/10 ${LAN_IPV6_PREFIX}"
+LAN_SOURCE_RANGES="["
+lan_separator=""
+for range in $IPV4_RANGES $IPV6_RANGES; do
+    LAN_SOURCE_RANGES="${LAN_SOURCE_RANGES}${lan_separator}\"${range}\""
+    lan_separator=", "
+done
+LAN_SOURCE_RANGES="${LAN_SOURCE_RANGES}]"
+
 rendered_traefik_yml=$(mktemp)
 # envsubst requires the literal variable-name string here (not shell-expanded) to know which variables to substitute
 # shellcheck disable=SC2016
@@ -92,7 +107,8 @@ rm -f "${rendered_traefik_yml}"
 PHOTOS_LOCAL_SECRET="${PHOTOS_LOCAL_SECRET}" \
 MEMORY_DEV_TOKEN="${MEMORY_DEV_TOKEN}" \
 MEMORY_NETADMIN_TOKEN="${MEMORY_NETADMIN_TOKEN}" MEMORY_WIKI_USERS="${MEMORY_WIKI_USERS}" \
-envsubst '${PHOTOS_LOCAL_SECRET} ${MEMORY_DEV_TOKEN} ${MEMORY_NETADMIN_TOKEN} ${MEMORY_WIKI_USERS}' \
+LAN_SOURCE_RANGES="${LAN_SOURCE_RANGES}" \
+envsubst '${PHOTOS_LOCAL_SECRET} ${MEMORY_DEV_TOKEN} ${MEMORY_NETADMIN_TOKEN} ${MEMORY_WIKI_USERS} ${LAN_SOURCE_RANGES}' \
     < dynamic_conf.template.yml > /etc/traefik/dynamic_conf.yml \
     || die "Failed to generate dynamic_conf.yml"
 # traefik (not root) reads this at runtime via the file provider, and it
@@ -189,11 +205,7 @@ allow_public_udp_port() {
 }
 
 # 8. Firewall rules - allow private networks to reach port 443 TCP/UDP, plus
-#    port 80 TCP for the http->https redirect entrypoint
-IPV4_RANGES="10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
-# 2a02:8010:61d5::/48 is the LAN's global IPv6 prefix: LAN clients use it rather
-# than ULA/link-local, so it must match the internal-only middleware sourceRange
-IPV6_RANGES="fc00::/7 fe80::/10 2a02:8010:61d5::/48"
+#    port 80 TCP for the http->https redirect entrypoint (ranges defined in step 4)
 
 open_port_for_private_networks 80 tcp
 open_port_for_private_networks 443 tcp

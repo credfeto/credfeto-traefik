@@ -1148,16 +1148,11 @@ http:
     # No ipStrategy, so the TCP remote address is checked, not X-Forwarded-For.
     # The LAN's own global IPv6 prefix is included because LAN hosts use
     # global addresses, not ULA, so IPv6 LAN clients would otherwise get 403.
-    # Keep in sync with IPV4_RANGES/IPV6_RANGES in the update script.
+    # The ranges are rendered from the single list defined in the update script
+    # (LAN_SOURCE_RANGES), shared with the firewall rules.
     internal-only:
       ipAllowList:
-        sourceRange:
-          - "10.0.0.0/8"
-          - "172.16.0.0/12"
-          - "192.168.0.0/16"
-          - "fc00::/7"
-          - "fe80::/10"
-          - "2a02:8010:61d5::/48"
+        sourceRange: ${LAN_SOURCE_RANGES}
 
     # Middleware for each header
     pacman-header:

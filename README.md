@@ -43,6 +43,7 @@ MEMORY_DEV_TOKEN=your_memory_dev_token
 MEMORY_NETADMIN_TOKEN=your_memory_netadmin_token
 MEMORY_WIKI_USERS=mark:$2y$05$replace_me
 PHOTOS_LOCAL_SECRET=your_photos_x_local_secret
+LAN_IPV6_PREFIX=2a02:8010:61d5::/48
 ```
 
 `.env` is gitignored and will not be committed.
@@ -58,6 +59,7 @@ PHOTOS_LOCAL_SECRET=your_photos_x_local_secret
 | `MEMORY_DEV_TOKEN` | Yes | `./update` | Bearer token for the `memory.markridgwell.com/dev` space. Requests must include `Authorization: Bearer <value>`. Generate with `openssl rand -hex 32`. |
 | `MEMORY_NETADMIN_TOKEN` | Yes | `./update` | Bearer token for the `memory.markridgwell.com/netadmin` space. Requests must include `Authorization: Bearer <value>`. Generate with `openssl rand -hex 32`. |
 | `MEMORY_WIKI_USERS` | Yes | `./update` | Basic auth user for `wiki.markridgwell.com`. One `htpasswd -nbB mark '<password>'` line, with single `$` characters and no quotes; holds one user only. |
+| `LAN_IPV6_PREFIX` | Yes | `./update` | The LAN's ISP-assigned global IPv6 prefix (e.g. `2a02:8010:61d5::/48`). `./update` uses it for both the firewall rules and the `internal-only` middleware's `sourceRange`, so a renumbering is a single edit followed by re-running `./update`. |
 
 ### 2. Start Traefik
 
