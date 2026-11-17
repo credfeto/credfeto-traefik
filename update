@@ -144,7 +144,7 @@ mkdir -p /etc/systemd/system/traefik.service.d \
     || die "Failed to create traefik.service.d"
 override_conf=/etc/systemd/system/traefik.service.d/override.conf
 rendered_override=$(mktemp)
-printf '[Service]\nEnvironmentFile=%s/.env\nWorkingDirectory=/var/lib/traefik\nReadWritePaths=/var/lib/traefik\n' "${repo_dir}" > "${rendered_override}"
+printf '[Service]\nEnvironmentFile=%s/.env\nWorkingDirectory=/var/lib/traefik\nReadWritePaths=/var/lib/traefik\nEnvironment=CLOUDFLARE_PROPAGATION_TIMEOUT=600\n' "${repo_dir}" > "${rendered_override}"
 if [ ! -f "${override_conf}" ] || ! cmp -s "${rendered_override}" "${override_conf}"; then
     cp "${rendered_override}" "${override_conf}" || die "Failed to install traefik.service override"
     traefik_restart_needed=1

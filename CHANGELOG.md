@@ -41,6 +41,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - README listed the wrong audiobookshelf backend port (8080, which is Dozzle); it now matches the proxy's 13378
 - README now documents the cctv.markridgwell.com and keys.markridgwell.com routes, which were missing from the service list
 - README "Adding a new service" example used a non-existent web-secure entrypoint and omitted the shared wildcard tls.domains block
+- ACME DNS-01 renewals failed every day from 2026-10-18 and the wildcard certificate expired on 2026-11-17, because the network redirects all outbound port 53 to the internal resolvers, which refuse the non-recursive queries lego sends to the authoritative Cloudflare nameservers. Skip only that authoritative check (propagation.disableANSChecks), keep the recursive check through the configured resolvers, and give it 10 minutes (CLOUDFLARE_PROPAGATION_TIMEOUT=600 in the systemd override) to ride out negative caching
 ### Changed
 - Re-addressed dns-01..dns-04 backends to 192.168.42.101-104 (was .251-.254) with new dual-stack IPv6 addresses 2a02:8010:61d5:42::101-104
 - Replaced the Docker-based deployment (traefik, cloudflared, watchtower containers) with native Arch Linux systemd services: traefik and cloudflared are now installed from pacman, traefik.yml is generated from a new traefik.template.yml, and pacman hooks restart each service when its package is upgraded, replacing watchtower's role

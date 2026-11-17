@@ -153,7 +153,15 @@ certificatesResolvers:
       storage: /etc/traefik/acme.json
       dnsChallenge:
         provider: cloudflare
-        delayBeforeCheck: 0
+        # OPNsense redirects all outbound port 53 to the internal Technitium resolvers,
+        # which REFUSE the non-recursive (RD=0) queries lego sends to the authoritative
+        # Cloudflare NS, so that check timed out and the cert expired (2026-11-17).
+        # Skip only the authoritative check; the recursive check via the resolvers
+        # below still confirms the record is visible. CLOUDFLARE_PROPAGATION_TIMEOUT
+        # (set in the systemd override by ./update) allows for negative caching.
+        propagation:
+          disableANSChecks: true
+          delayBeforeChecks: 30s
         resolvers:
           - "1.1.1.1:53"
           - "1.0.0.1:53"
