@@ -16,6 +16,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Added
 - docs/ folder with architecture diagram showing repository folder structure
 - grafana.markridgwell.com host routing to Grafana on the monitoring VM (192.168.150.134:3000), LAN only via the internal-only middleware
+- grafana.markridgwell.com/mcp and monitoring.markridgwell.com/mcp routing to the mcp-grafana (8082) and mcp-victoriametrics (8081) MCP servers on the monitoring VM, LAN only via the internal-only middleware (the MCP servers have no authentication)
 - cctv.markridgwell.com host routing to 192.168.60.180 over self-signed TLS
 - keys.markridgwell.com zone pointing at 192.168.150.220:8081 using the wildcard certificate
 - dns-05.markridgwell.com host routing to dual-stack backend 192.168.42.105 / 2a02:8010:61d5:42::105

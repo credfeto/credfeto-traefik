@@ -490,6 +490,22 @@ http:
       middlewares:
         - internal-only
 
+    grafana-mcp-router:
+      rule: "Host(`grafana.markridgwell.com`) && Path(`/mcp`)"
+      service: grafana-mcp-service
+      entryPoints:
+        - web-general
+      middlewares:
+        - internal-only
+
+    monitoring-mcp-router:
+      rule: "Host(`monitoring.markridgwell.com`) && Path(`/mcp`)"
+      service: monitoring-mcp-service
+      entryPoints:
+        - web-general
+      middlewares:
+        - internal-only
+
     monitoring-router:
       rule: "Host(`monitoring.markridgwell.com`)"
       service: monitoring-service
@@ -1126,6 +1142,16 @@ http:
           timeout: 5s
         servers:
           - url: "http://192.168.150.134:3000"
+
+    grafana-mcp-service:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.150.134:8082"
+
+    monitoring-mcp-service:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.150.134:8081"
 
   middlewares:
     memory-dev-strip:
