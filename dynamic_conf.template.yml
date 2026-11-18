@@ -482,6 +482,14 @@ http:
       middlewares:
         - internal-only
 
+    grafana-router:
+      rule: "Host(`grafana.markridgwell.com`)"
+      service: grafana-service
+      entryPoints:
+        - web-general
+      middlewares:
+        - internal-only
+
     monitoring-router:
       rule: "Host(`monitoring.markridgwell.com`)"
       service: monitoring-service
@@ -1109,6 +1117,15 @@ http:
           timeout: 5s
         servers:
           - url: "http://192.168.150.134:8428"
+
+    grafana-service:
+      loadBalancer:
+        healthCheck:
+          path: /api/health
+          interval: 30s
+          timeout: 5s
+        servers:
+          - url: "http://192.168.150.134:3000"
 
   middlewares:
     memory-dev-strip:
