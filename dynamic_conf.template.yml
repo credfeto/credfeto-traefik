@@ -506,6 +506,24 @@ http:
       entryPoints:
         - web-general
 
+    # VictoriaLogs (central logs) on the monitoring VM. LAN only: neither
+    # VictoriaLogs nor mcp-victorialogs has any authentication.
+    logs-mcp-router:
+      rule: "Host(`logs.markridgwell.com`) && Path(`/mcp`)"
+      service: logs-mcp-service
+      entryPoints:
+        - web-general
+      middlewares:
+        - internal-only
+
+    logs-router:
+      rule: "Host(`logs.markridgwell.com`)"
+      service: logs-service
+      entryPoints:
+        - web-general
+      middlewares:
+        - internal-only
+
     # Direct port routers (plain HTTP — TLS terminated by Cloudflare Tunnel)
     npm-direct-router:
       rule: "Host(`npm.markridgwell.com`)"
@@ -1129,6 +1147,20 @@ http:
       loadBalancer:
         servers:
           - url: "http://192.168.150.134:8081"
+
+    logs-service:
+      loadBalancer:
+        healthCheck:
+          path: /health
+          interval: 30s
+          timeout: 5s
+        servers:
+          - url: "http://192.168.150.134:9428"
+
+    logs-mcp-service:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.150.134:8083"
 
   middlewares:
     memory-dev-strip:

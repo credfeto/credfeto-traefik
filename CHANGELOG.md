@@ -16,6 +16,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Set a 2-year HSTS header (includeSubDomains, preload) on all HTTPS responses
 - Applied the existing internal-only private-network ipAllowList middleware to every internal-only router (homeassistant, audiobookshelf, ollama, caches, git-workflow, github-api, keys, cctv, dotnet, aur-repo, dns and the Traefik dashboard), so these hosts are refused when reached through Cloudflare Tunnel via loopback; documented the behaviour in the README
 ### Added
+- logs.markridgwell.com routing to VictoriaLogs on the monitoring VM (192.168.150.134:9428, web UI at /select/vmui, health check /health) and logs.markridgwell.com/mcp to the mcp-victorialogs MCP server (8083), both LAN only via the internal-only middleware (neither has authentication)
 - DNS-over-TLS for `dns.markridgwell.com` on port 853 (LAN/Tailscale only via an ipAllowList): Traefik terminates TLS with the wildcard certificate and load-balances the DNS-over-TCP stream across the six Technitium nodes' DNS-over-TCP-PROXY port 538 using PROXY protocol v2, so client addresses are preserved; `./update` opens 853/tcp for private networks
 - docs/ folder with architecture diagram showing repository folder structure
 - grafana.markridgwell.com host routing to Grafana on the monitoring VM (192.168.150.134:3000), LAN only via the internal-only middleware
