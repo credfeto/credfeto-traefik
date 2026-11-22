@@ -57,6 +57,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Defined the LAN address ranges once in the update script (with the ISP IPv6 prefix sourced from LAN_IPV6_PREFIX in .env) and substituted them into the internal-only middleware sourceRange
 ### Deprecated
 ### Removed
+- dev-cache-01/02.markridgwell.com and linux-cache-01/02.markridgwell.com routes, services and Host-header middlewares: they pointed at port 8080 on the cache VMs, which was only ever the Dozzle log viewer (still running unauthenticated on the dev caches, already removed from the linux caches so those health checks always failed). Container logs now go to VictoriaLogs
 - Removed `home.markridgwell.com` completely (routers on 443 and the port 446 entrypoint, `home-service`, `home-header`): the homepage VM is retired
 - IPv6 backend addresses from dns-01..dns-05 services; backends are IPv4-only for now
 - No-op Host-rewrite middlewares from the homeassistant, audiobookshelf, photos, dns and dns-01..dns-06, github-api, git-workflow, keys and monitoring routes (they set Host to the value the router already matches)

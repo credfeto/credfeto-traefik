@@ -273,42 +273,6 @@ http:
         - ollama-header
         - internal-only
 
-    linux-cache-01-router:
-      rule: "Host(`linux-cache-01.markridgwell.com`)"
-      service: linux-cache-01-service
-      entryPoints:
-        - web-general
-      middlewares:
-        - linux-cache-01-header
-        - internal-only
-
-    linux-cache-02-router:
-      rule: "Host(`linux-cache-02.markridgwell.com`)"
-      service: linux-cache-02-service
-      entryPoints:
-        - web-general
-      middlewares:
-        - linux-cache-02-header
-        - internal-only
-
-    dev-cache-01-router:
-      rule: "Host(`dev-cache-01.markridgwell.com`)"
-      service: dev-cache-01-service
-      entryPoints:
-        - web-general
-      middlewares:
-        - dev-cache-01-header
-        - internal-only
-
-    dev-cache-02-router:
-      rule: "Host(`dev-cache-02.markridgwell.com`)"
-      service: dev-cache-02-service
-      entryPoints:
-        - web-general
-      middlewares:
-        - dev-cache-02-header
-        - internal-only
-
     dns-router-v6:
       rule: "Host(`dns.markridgwell.com`) && ClientIP(`::/0`)"
       priority: 100
@@ -714,42 +678,6 @@ http:
         servers:
           - url: "https://192.168.150.10:5555"
           - url: "https://192.168.150.20:5555"
-
-    linux-cache-01-service:
-      loadBalancer:
-        healthCheck:
-          path: /healthcheck
-          interval: 30s
-          timeout: 5s
-        servers:
-          - url: "http://192.168.150.200:8080"
-
-    linux-cache-02-service:
-      loadBalancer:
-        healthCheck:
-          path: /healthcheck
-          interval: 30s
-          timeout: 5s
-        servers:
-          - url: "http://192.168.150.201:8080"
-
-    dev-cache-01-service:
-      loadBalancer:
-        healthCheck:
-          path: /healthcheck
-          interval: 30s
-          timeout: 5s
-        servers:
-          - url: "http://192.168.150.100:8080"
-
-    dev-cache-02-service:
-      loadBalancer:
-        healthCheck:
-          path: /healthcheck
-          interval: 30s
-          timeout: 5s
-        servers:
-          - url: "http://192.168.150.101:8080"
 
     api-nuget-service:
       loadBalancer:
@@ -1237,26 +1165,6 @@ http:
       headers:
         customRequestHeaders:
           Host: "ollama.local"
-
-    linux-cache-01-header:
-      headers:
-        customRequestHeaders:
-          Host: "linux-cache-01.local"
-
-    linux-cache-02-header:
-      headers:
-        customRequestHeaders:
-          Host: "linux-cache-02.local"
-
-    dev-cache-01-header:
-      headers:
-        customRequestHeaders:
-          Host: "dev-cache-01.local"
-
-    dev-cache-02-header:
-      headers:
-        customRequestHeaders:
-          Host: "dev-cache-02.local"
 
     api-nuget-header:
       headers:

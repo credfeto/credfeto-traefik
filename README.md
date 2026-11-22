@@ -152,10 +152,6 @@ All services are accessible via HTTPS on port 443 with Let's Encrypt certificate
 
 ### Development Cache Services
 
-- `dev-cache-01.markridgwell.com` → `http://192.168.150.100:8080` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
-- `dev-cache-02.markridgwell.com` → `http://192.168.150.101:8080` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
-- `linux-cache-01.markridgwell.com` → `http://192.168.150.200:8080` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
-- `linux-cache-02.markridgwell.com` → `http://192.168.150.201:8080` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 
 ### Docker Services
 
