@@ -7,8 +7,16 @@ api:
 log:
   level: INFO
 
+# Only failed (4xx/5xx) or slow (>5s) requests are logged: successful
+# requests - mostly every host's telegraf push every 10s - were ~16k lines an
+# hour per proxy and nothing reads them. The fail2ban traefik-auth jail
+# (fail2ban/traefik.local) needs the 401s, which this keeps.
 accessLog:
   format: common
+  filters:
+    statusCodes:
+      - "400-599"
+    minDuration: "5s"
 
 entryPoints:
   web:

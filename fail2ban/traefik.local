@@ -1,0 +1,23 @@
+# fail2ban jail for Traefik (installed to /etc/fail2ban/jail.d/traefik.local by ./update).
+#
+# Bans clients that keep failing authentication (HTTP 401) on any route, e.g.
+# the memory/wiki basic-auth or token middlewares. Uses fail2ban's stock
+# traefik-auth filter in "aggressive" mode, so a 401 counts whether or not a
+# username was sent. 403s are NOT counted: the github-api cache legitimately
+# passes GitHub's 403s through for internal clients.
+#
+# Traefik writes its access log to stdout, so the jail reads the journal.
+# The access log only keeps 4xx/5xx and slow requests (traefik.template.yml),
+# which still includes every 401.
+#
+# Requests that arrive through the Cloudflare tunnel come from cloudflared on
+# this host (127.0.0.1/::1), which fail2ban never bans, so this protects the
+# LAN/Tailscale-facing routes only.
+[traefik-auth]
+enabled = true
+backend = systemd
+journalmatch = _SYSTEMD_UNIT=traefik.service
+filter = traefik-auth[mode=aggressive]
+port = http,https
+maxretry = 5
+findtime = 10m

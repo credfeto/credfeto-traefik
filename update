@@ -214,6 +214,20 @@ allow_public_udp_port 52363
 
 firewall-cmd --reload || die "Failed to reload firewall"
 
+# 8b. fail2ban jail for repeated 401s (reads traefik's access log from the
+#     journal). Only installed where fail2ban is present; reloaded when the
+#     jail file changes.
+if command -v fail2ban-client > /dev/null 2>&1; then
+    if ! cmp -s "${repo_dir}/fail2ban/traefik.local" /etc/fail2ban/jail.d/traefik.local; then
+        info "Installing fail2ban traefik-auth jail..."
+        install -D -m 0644 "${repo_dir}/fail2ban/traefik.local" /etc/fail2ban/jail.d/traefik.local \
+            || die "Failed to install fail2ban jail"
+        if systemctl is-active --quiet fail2ban; then
+            fail2ban-client reload || die "Failed to reload fail2ban"
+        fi
+    fi
+fi
+
 # 9. Start/enable the services, restarting traefik only if its static config
 #    or environment actually changed
 systemctl daemon-reload || die "Failed to reload systemd units"
