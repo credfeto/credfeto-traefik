@@ -14,7 +14,7 @@ tls:
     # without it in the list Traefik aborts the handshake with
     # no_application_protocol. Clients that send no ALPN still work.
     dot:
-      minVersion: VersionTLS12
+      minVersion: VersionTLS13
       sniStrict: true
       alpnProtocols:
         - dot

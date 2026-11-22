@@ -10,6 +10,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 
 ## [Unreleased]
 ### Security
+- DNS-over-TLS (`dot` TLS option) now requires TLS 1.3, matching the default for every other route
 - Removed the public Cloudflare Tunnel paths for `photos.markridgwell.com` (port 450 entrypoint, `photos-direct-router` and the `X-Local` `photos-local-check` middleware with its `PHOTOS_LOCAL_SECRET`); the main photos route is now internal only via the `internal-only` middleware
 - Restricted the monitoring direct port (457) to POST requests only, since VictoriaMetrics has no built-in authentication and the route was previously open to queries and admin operations from anyone able to reach it.
 - Set a 2-year HSTS header (includeSubDomains, preload) on all HTTPS responses
