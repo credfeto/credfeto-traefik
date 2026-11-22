@@ -1253,3 +1253,46 @@ http:
         stsSeconds: 63072000
         stsIncludeSubdomains: true
         stsPreload: true
+
+# DNS-over-TLS (port 853) for dns.markridgwell.com, LAN and Tailscale clients only.
+# Traefik terminates TLS with the *.markridgwell.com wildcard and forwards the
+# DNS-over-TCP stream to the Technitium nodes' DNS-over-TCP-PROXY port (538)
+# with PROXY protocol v2, so Technitium sees (and logs) the real client address.
+# The DNS nodes only trust PROXY headers from the proxy addresses.
+tcp:
+  routers:
+    dot-router:
+      rule: "HostSNI(`dns.markridgwell.com`)"
+      entryPoints:
+        - dot
+      service: dot-service
+      middlewares:
+        - dot-internal-only
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "markridgwell.com"
+            sans:
+              - "*.markridgwell.com"
+
+  middlewares:
+    dot-internal-only:
+      ipAllowList:
+        sourceRange: ${LAN_SOURCE_RANGES}
+
+  serversTransports:
+    dot-proxy-protocol:
+      proxyProtocol:
+        version: 2
+
+  services:
+    dot-service:
+      loadBalancer:
+        serversTransport: dot-proxy-protocol
+        servers:
+          - address: "192.168.42.101:538"
+          - address: "192.168.42.102:538"
+          - address: "192.168.42.103:538"
+          - address: "192.168.42.104:538"
+          - address: "192.168.42.105:538"
+          - address: "192.168.42.106:538"

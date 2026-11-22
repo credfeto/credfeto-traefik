@@ -244,6 +244,7 @@ The ports below are plain HTTP used as Cloudflare Tunnel origin services.
 **Each hostname must have its own dedicated port**: Cloudflare Tunnel ingress rules
 route by hostname, and each rule maps to a single origin URL (including port).
 
+- **853** (TCP): DNS-over-TLS for `dns.markridgwell.com` (LAN/Tailscale only). TLS is terminated by Traefik and forwarded to the Technitium DNS-over-TCP-PROXY port 538 with PROXY protocol v2.
 - **447** (TCP): DeFi Service, HTTP (Cloudflare Tunnel origin)
 - **448** (TCP): NPM Registry, HTTP (Cloudflare Tunnel origin)
 - **449** (TCP): API NuGet Registry, HTTP (Cloudflare Tunnel origin)

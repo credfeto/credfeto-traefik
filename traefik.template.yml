@@ -127,6 +127,12 @@ entryPoints:
         - "fc00::/7"
         - "fe80::/10"
 
+  # DNS-over-TLS for dns.markridgwell.com: TLS is terminated here (wildcard
+  # cert) and the plain DNS-over-TCP stream goes to Technitium's
+  # DNS-over-TCP-PROXY listener (PROXY protocol v2, so it logs the real client).
+  dot:
+    address: ":853"
+
 certificatesResolvers:
   letsencrypt:
     acme:

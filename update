@@ -202,11 +202,13 @@ allow_public_udp_port() {
 }
 
 # 8. Firewall rules - allow private networks to reach port 443 TCP/UDP, plus
-#    port 80 TCP for the http->https redirect entrypoint (ranges defined in step 4)
+#    port 80 TCP for the http->https redirect entrypoint and port 853 TCP for
+#    DNS-over-TLS (ranges defined in step 4)
 
 open_port_for_private_networks 80 tcp
 open_port_for_private_networks 443 tcp
 open_port_for_private_networks 443 udp
+open_port_for_private_networks 853 tcp
 
 allow_public_udp_port 52363
 
