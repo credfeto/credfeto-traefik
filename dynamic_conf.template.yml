@@ -1127,7 +1127,7 @@ http:
           interval: 30s
           timeout: 5s
         servers:
-          - url: "http://192.168.150.134:8428"
+          - url: "http://192.168.160.134:8428"
 
     grafana-service:
       loadBalancer:
@@ -1136,17 +1136,17 @@ http:
           interval: 30s
           timeout: 5s
         servers:
-          - url: "http://192.168.150.134:3000"
+          - url: "http://192.168.160.134:3000"
 
     grafana-mcp-service:
       loadBalancer:
         servers:
-          - url: "http://192.168.150.134:8082"
+          - url: "http://192.168.160.134:8082"
 
     monitoring-mcp-service:
       loadBalancer:
         servers:
-          - url: "http://192.168.150.134:8081"
+          - url: "http://192.168.160.134:8081"
 
     logs-service:
       loadBalancer:
@@ -1155,12 +1155,12 @@ http:
           interval: 30s
           timeout: 5s
         servers:
-          - url: "http://192.168.150.134:9428"
+          - url: "http://192.168.160.134:9428"
 
     logs-mcp-service:
       loadBalancer:
         servers:
-          - url: "http://192.168.150.134:8083"
+          - url: "http://192.168.160.134:8083"
 
   middlewares:
     memory-dev-strip:

@@ -173,7 +173,7 @@ All services are accessible via HTTPS on port 443 with Let's Encrypt certificate
 
 ### Monitoring
 
-- `monitoring.markridgwell.com` → `http://192.168.150.134:8428`, also available on port **457** (HTTP direct, POST only; see below)
+- `monitoring.markridgwell.com` → `http://192.168.160.134:8428`, also available on port **457** (HTTP direct, POST only; see below)
 
 #### Monitoring: write-only direct port (457)
 
