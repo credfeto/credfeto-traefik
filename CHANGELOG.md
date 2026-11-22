@@ -51,6 +51,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - README "Adding a new service" example used a non-existent web-secure entrypoint and omitted the shared wildcard tls.domains block
 - ACME DNS-01 renewals failed every day from 2026-10-18 and the wildcard certificate expired on 2026-11-17, because the network redirects all outbound port 53 to the internal resolvers, which refuse the non-recursive queries lego sends to the authoritative Cloudflare nameservers. Skip only that authoritative check (propagation.disableANSChecks), keep the recursive check through the configured resolvers, and give it 10 minutes (CLOUDFLARE_PROPAGATION_TIMEOUT=600 in the systemd override) to ride out negative caching
 ### Changed
+- familiar.markridgwell.com backend moved to the familiar VM's address on the new Familiar VLAN 19: `http://192.168.190.129:8081` (was 192.168.150.129)
 - Traefik access log only records failed (4xx/5xx) or slow (>5s) requests: successful requests, mostly every host's telegraf push, were ~16k lines an hour per proxy and nothing read them
 - Monitoring VM backends (VictoriaMetrics 8428, Grafana 3000, mcp-victoriametrics 8081, mcp-grafana 8082, VictoriaLogs 9428, mcp-victorialogs 8083) moved to its new address on the Monitoring VLAN 16: `192.168.160.134` (was `192.168.150.134`)
 - Re-addressed dns-01..dns-04 backends to 192.168.42.101-104 (was .251-.254) with new dual-stack IPv6 addresses 2a02:8010:61d5:42::101-104

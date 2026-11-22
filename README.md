@@ -179,7 +179,7 @@ Port 457 is the Cloudflare Tunnel origin for `monitoring.markridgwell.com`, inte
 
 - `homeassistant.markridgwell.com` → `http://192.168.34.8:8123` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 - `audiobookshelf.markridgwell.com` → `http://192.168.150.16:13378` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
-- `familiar.markridgwell.com` → `http://192.168.150.129:8081` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
+- `familiar.markridgwell.com` → `http://192.168.190.129:8081` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 - `trmnl.markridgwell.com` → `http://192.168.150.31:8080` (TRMNL server, internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 - `trmnl-assets.markridgwell.com` → `http://192.168.150.31:8081` (local TRMNL framework assets, internal only)
 - `defi.markridgwell.com` → `https://192.168.150.12`, also available on port **447** (HTTP direct)

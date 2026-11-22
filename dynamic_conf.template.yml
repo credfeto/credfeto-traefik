@@ -650,7 +650,7 @@ http:
       loadBalancer:
         # No healthCheck: no unauthenticated health endpoint is known for this app.
         servers:
-          - url: "http://192.168.150.129:8081"
+          - url: "http://192.168.190.129:8081"
 
     docker-cache-service:
       loadBalancer:
