@@ -694,8 +694,8 @@ http:
           interval: 30s
           timeout: 5s
         servers:
-          - url: "https://192.168.150.100:5555"
-          - url: "https://192.168.150.101:5555"
+          - url: "https://192.168.200.100:5555"
+          - url: "https://192.168.200.101:5555"
 
     funfair-nuget-service:
       loadBalancer:
@@ -706,8 +706,8 @@ http:
           interval: 30s
           timeout: 5s
         servers:
-          - url: "https://192.168.150.100:5555"
-          - url: "https://192.168.150.101:5555"
+          - url: "https://192.168.200.100:5555"
+          - url: "https://192.168.200.101:5555"
 
     funfair-prerelease-nuget-service:
       loadBalancer:
@@ -718,8 +718,8 @@ http:
           interval: 30s
           timeout: 5s
         servers:
-          - url: "https://192.168.150.100:5555"
-          - url: "https://192.168.150.101:5555"
+          - url: "https://192.168.200.100:5555"
+          - url: "https://192.168.200.101:5555"
 
     npm-service:
       loadBalancer:
@@ -732,8 +732,8 @@ http:
           interval: 30s
           timeout: 5s
         servers:
-          - url: "https://192.168.150.100:5555"
-          - url: "https://192.168.150.101:5555"
+          - url: "https://192.168.200.100:5555"
+          - url: "https://192.168.200.101:5555"
 
     dotnet-service:
       loadBalancer:
@@ -749,8 +749,8 @@ http:
           interval: 30s
           timeout: 5s
         servers:
-          - url: "https://192.168.150.100:5555"
-          - url: "https://192.168.150.101:5555"
+          - url: "https://192.168.200.100:5555"
+          - url: "https://192.168.200.101:5555"
 
     dns-service:
       loadBalancer:

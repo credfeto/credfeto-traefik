@@ -192,17 +192,17 @@ Port 457 is the Cloudflare Tunnel origin for `monitoring.markridgwell.com`, inte
 
 ### NuGet Registries
 
-- `api-nuget.markridgwell.com` → `https://192.168.150.100:5555`, `https://192.168.150.101:5555`, also available on port **449** (HTTP direct)
-- `funfair-nuget.markridgwell.com` → `https://192.168.150.100:5555`, `https://192.168.150.101:5555`, also available on port **455** (HTTP direct)
-- `funfair-prerelease-nuget.markridgwell.com` → `https://192.168.150.100:5555`, `https://192.168.150.101:5555`, also available on port **456** (HTTP direct)
+- `api-nuget.markridgwell.com` → `https://192.168.200.100:5555`, `https://192.168.200.101:5555`, also available on port **449** (HTTP direct)
+- `funfair-nuget.markridgwell.com` → `https://192.168.200.100:5555`, `https://192.168.200.101:5555`, also available on port **455** (HTTP direct)
+- `funfair-prerelease-nuget.markridgwell.com` → `https://192.168.200.100:5555`, `https://192.168.200.101:5555`, also available on port **456** (HTTP direct)
 
 ### NPM Registry
 
-- `npm.markridgwell.com` → `https://192.168.150.100:5555`, `https://192.168.150.101:5555`, also available on port **448** (HTTP direct)
+- `npm.markridgwell.com` → `https://192.168.200.100:5555`, `https://192.168.200.101:5555`, also available on port **448** (HTTP direct)
 
 ### .NET Build Artefacts
 
-- `dotnet.markridgwell.com` → `https://192.168.150.100:5555`, `https://192.168.150.101:5555` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
+- `dotnet.markridgwell.com` → `https://192.168.200.100:5555`, `https://192.168.200.101:5555` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 
 ### AI Services
 
