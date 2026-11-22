@@ -10,6 +10,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 
 ## [Unreleased]
 ### Security
+- Egress lockdown on the proxies (`firewall/configure`, run by `./update` step 8c): a firewalld policy allows only the backends in the rendered dynamic config, DNS, NTP, log shipping, the Cloudflare tunnel and API, Let's Encrypt, the Traefik plugin catalogue, GitHub and the Arch package sources, with CDN-fronted destinations kept in ipsets refreshed every 10 minutes. `proxy-firewall-sync.timer` re-applies it when the firewall config changes, and the daily `Repo: Update egress ranges` workflow refreshes the GitHub and Cloudflare ranges. Observation mode (log unmatched traffic, drop nothing) until `PROXY_FIREWALL_ENFORCE=true`
 - DNS-over-TLS (`dot` TLS option) now requires TLS 1.3, matching the default for every other route
 - Removed the public Cloudflare Tunnel paths for `photos.markridgwell.com` (port 450 entrypoint, `photos-direct-router` and the `X-Local` `photos-local-check` middleware with its `PHOTOS_LOCAL_SECRET`); the main photos route is now internal only via the `internal-only` middleware
 - Restricted the monitoring direct port (457) to POST requests only, since VictoriaMetrics has no built-in authentication and the route was previously open to queries and admin operations from anyone able to reach it.

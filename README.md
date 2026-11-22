@@ -58,6 +58,7 @@ LAN_IPV6_PREFIX=2a02:8010:61d5::/48
 | `MEMORY_NETADMIN_TOKEN` | Yes | `./update` | Bearer token for the `memory.markridgwell.com/netadmin` space. Requests must include `Authorization: Bearer <value>`. Generate with `openssl rand -hex 32`. |
 | `MEMORY_WIKI_USERS` | Yes | `./update` | Basic auth user for `wiki.markridgwell.com`. One `htpasswd -nbB mark '<password>'` line, with single `$` characters and no quotes; holds one user only. |
 | `LAN_IPV6_PREFIX` | Yes | `./update` | The LAN's ISP-assigned global IPv6 prefix (e.g. `2a02:8010:61d5::/48`). `./update` uses it for both the firewall rules and the `internal-only` middleware's `sourceRange`, so a renumbering is a single edit followed by re-running `./update`. |
+| `PROXY_FIREWALL_ENFORCE` | No | `firewall/configure` | `true` makes the egress firewall drop anything it does not allow. Unset or anything else is observation mode (log only). See "Egress firewall". |
 
 ### 2. Start Traefik
 
@@ -141,6 +142,26 @@ The `dns-01` to `dns-06` routes forward to HTTPS backends on port `53443` via th
 ### IPv6-aware routing
 
 Each `dns*.markridgwell.com` host has two routers: a `-v6` router matching `ClientIP(`::/0`)` at `priority: 100`, and the plain `Host()` router at `priority: 1` as the fallback. A request arriving over IPv6 matches the `-v6` router and is forwarded to the `-v6` service (the IPv6 backend addresses above); everything else (IPv4 clients, or any host without a `-v6` router defined) falls through to the plain router and IPv4 backend. This requires the client's real IP to reach Traefik unmodified; it relies on `forwardedHeaders.trustedIPs` in `traefik.yml` being scoped to private ranges only, so a public client's `ClientIP()` reflects their actual connection rather than a spoofable header.
+
+## Egress firewall
+
+`./update` (step 8c) runs `firewall/configure`, which locks the proxy's outbound traffic down with a firewalld policy, `prx-egress`, the same way as the DNS servers. Inbound is already covered by step 8: Traefik runs on the host, so the public zone's rules filter it directly.
+
+What the proxy may connect to:
+
+- every backend in the rendered `/etc/traefik/dynamic_conf.yml` (each `url:` host and port, plus TCP service `address:` entries), so a new route works as soon as `./update` renders it
+- DNS to the fleet's DNS servers, NTP to the router, journald uploads to monitoring, ICMP
+- the Cloudflare tunnel (cloudflared, 7844 tcp/udp) and the Cloudflare API (ACME DNS challenge), Let's Encrypt, the Traefik plugin catalogue, GitHub, and the Arch package sources (the pacman mirrors in `/etc/pacman.d/mirrorlist`, chaotic-aur, pkgstats, the Arch WKD)
+
+Destinations without a stable address are firewalld ipsets that `proxy-egress-refresh.timer` refreshes every 10 minutes: names resolved from DNS, plus GitHub's and Cloudflare's published ranges (`firewall/github-egress-ranges` and `firewall/cloudflare-egress-ranges`). `proxy-firewall-sync.timer` (every 15 minutes) pulls the checkout and re-runs `firewall/configure` when anything under `firewall/` changed since the commit it last applied; route changes still need `./update`. The `Repo: Update egress ranges` workflow regenerates the two range files daily and commits any change to main, refusing a list that has shrunk by more than a fifth.
+
+`PROXY_FIREWALL_ENFORCE` in `.env` is the only switch. Unset or anything other than `true` is observation mode: every rule is in place, but traffic that matches none of them still flows and is logged with the prefix `prx-egress-unmatched:` (rate-limited to 30 a minute). Run in observation mode first and check the journal for anything legitimate that is not covered:
+
+```sh
+sudo journalctl -k --since -1d | grep prx-egress-unmatched
+```
+
+then set `PROXY_FIREWALL_ENFORCE=true` and run `./update`.
 
 ## Dashboard
 

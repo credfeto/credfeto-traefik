@@ -228,6 +228,13 @@ if command -v fail2ban-client > /dev/null 2>&1; then
     fi
 fi
 
+# 8c. Egress lockdown (firewalld policy prx-egress). Runs after step 4 has
+#     rendered dynamic_conf.yml, because every backend in it is allowed.
+#     Observation mode unless PROXY_FIREWALL_ENFORCE=true in .env. See
+#     README.md, "Egress firewall".
+info "Configuring the egress firewall..."
+"${repo_dir}/firewall/configure" || die "Failed to configure the egress firewall"
+
 # 9. Start/enable the services, restarting traefik only if its static config
 #    or environment actually changed
 systemctl daemon-reload || die "Failed to reload systemd units"
