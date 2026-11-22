@@ -10,6 +10,14 @@ tls:
     tls12:
       minVersion: VersionTLS12
       sniStrict: true
+    # DNS-over-TLS: Android (Private DNS) and other DoT clients offer ALPN "dot";
+    # without it in the list Traefik aborts the handshake with
+    # no_application_protocol. Clients that send no ALPN still work.
+    dot:
+      minVersion: VersionTLS12
+      sniStrict: true
+      alpnProtocols:
+        - dot
 
 http:
   serversTransports:
@@ -1269,6 +1277,7 @@ tcp:
       middlewares:
         - dot-internal-only
       tls:
+        options: dot
         certResolver: letsencrypt
         domains:
           - main: "markridgwell.com"

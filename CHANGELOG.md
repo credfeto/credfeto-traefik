@@ -34,6 +34,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Workflow MCP server reachable at workflow-mcp.markridgwell.com, restricted to the internal network so it cannot be reached through Cloudflare Tunnel
 - memory.markridgwell.com (/dev and /netadmin Basic Memory MCP spaces, each with its own bearer token via traefik-api-token-middleware) and wiki.markridgwell.com (basic auth) routing to the credfeto-memory-docker host at 192.168.150.30; new required .env values MEMORY_DEV_TOKEN, MEMORY_NETADMIN_TOKEN, MEMORY_WIKI_USERS
 ### Fixed
+- DNS-over-TLS on port 853 rejected Android Private DNS: clients offering ALPN `dot` failed the handshake with `no_application_protocol`; the DoT router now uses a `dot` TLS option with `alpnProtocols: [dot]`
 - YAML document start markers added to docker-compose.yml, dynamic_conf.template.yml, and traefik.yml to satisfy ansible-lint
 - watchtower missing a restart policy, leaving it stopped after a Docker daemon restart
 - api-nuget, funfair-nuget, funfair-prerelease-nuget and dotnet health checks were all silently probing the same default nginx vhost (builds.dotnet.local) instead of their own, since health checks bypass router middleware and the shared :5555 nginx has no default_server; added hostname: to each so they probe their own vhost, and added the missing npm health check the same way
