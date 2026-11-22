@@ -47,15 +47,6 @@ entryPoints:
         - "fc00::/7"
         - "fe80::/10"
 
-  web-home:
-    address: ":446"
-    forwardedHeaders:
-      trustedIPs:
-        - "10.0.0.0/8"
-        - "172.16.0.0/12"
-        - "192.168.0.0/16"
-        - "fc00::/7"
-        - "fe80::/10"
   web-defi:
     address: ":447"
     forwardedHeaders:
@@ -78,16 +69,6 @@ entryPoints:
 
   api-nuget:
     address: ":449"
-    forwardedHeaders:
-      trustedIPs:
-        - "10.0.0.0/8"
-        - "172.16.0.0/12"
-        - "192.168.0.0/16"
-        - "fc00::/7"
-        - "fe80::/10"
-
-  photos:
-    address: ":450"
     forwardedHeaders:
       trustedIPs:
         - "10.0.0.0/8"

@@ -42,7 +42,6 @@ CLOUDFLARE_TUNNEL_TOKEN=your_cloudflare_tunnel_token
 MEMORY_DEV_TOKEN=your_memory_dev_token
 MEMORY_NETADMIN_TOKEN=your_memory_netadmin_token
 MEMORY_WIKI_USERS=mark:$2y$05$replace_me
-PHOTOS_LOCAL_SECRET=your_photos_x_local_secret
 LAN_IPV6_PREFIX=2a02:8010:61d5::/48
 ```
 
@@ -55,7 +54,6 @@ LAN_IPV6_PREFIX=2a02:8010:61d5::/48
 | `CLOUDFLARE_EMAIL` | Yes | `traefik` | Templated into `traefik.yml`'s `certificatesResolvers.letsencrypt.acme.email` for Let's Encrypt registration. |
 | `CF_DNS_API_TOKEN` | Yes | `traefik` | Cloudflare DNS API token used by the ACME DNS challenge provider; read live from `.env` via `traefik.service`'s `EnvironmentFile=`. |
 | `CLOUDFLARE_TUNNEL_TOKEN` | Yes | `cloudflared` | Consumed once by `cloudflared service install` when `./update` first bootstraps the tunnel service; not re-read afterwards. |
-| `PHOTOS_LOCAL_SECRET` | Yes | `./update` | Shared secret injected into the photos router rule. Requests to port 450 must include `X-Local: <value>` matching this secret; unauthorised requests are rejected. Configure Cloudflare Tunnel to add this header on all requests to the photos origin. |
 | `MEMORY_DEV_TOKEN` | Yes | `./update` | Bearer token for the `memory.markridgwell.com/dev` space. Requests must include `Authorization: Bearer <value>`. Generate with `openssl rand -hex 32`. |
 | `MEMORY_NETADMIN_TOKEN` | Yes | `./update` | Bearer token for the `memory.markridgwell.com/netadmin` space. Requests must include `Authorization: Bearer <value>`. Generate with `openssl rand -hex 32`. |
 | `MEMORY_WIKI_USERS` | Yes | `./update` | Basic auth user for `wiki.markridgwell.com`. One `htpasswd -nbB mark '<password>'` line, with single `$` characters and no quotes; holds one user only. |
@@ -115,7 +113,7 @@ The `markridgwell.com` / `*.markridgwell.com` wildcard certificate is declared o
 
 The `internal-only` middleware is an `ipAllowList` that admits the private IPv4 ranges, IPv6 unique local and link-local addresses, and the LAN's global IPv6 prefix. It checks the TCP remote address of the connection, not `X-Forwarded-For`. Loopback is deliberately excluded: `cloudflared` connects to Traefik over loopback, so excluding it means requests arriving through Cloudflare Tunnel are refused with `403 Forbidden` on these hosts.
 
-Traefik watches `dynamic_conf.yml` for changes and reloads automatically; no restart required for route or service changes. To apply template changes that alter `${PHOTOS_LOCAL_SECRET}` or other substituted values, re-run `./update`.
+Traefik watches `dynamic_conf.yml` for changes and reloads automatically; no restart required for route or service changes. To apply template changes that alter substituted values such as the memory tokens, re-run `./update`.
 
 ## DNS services
 
@@ -183,7 +181,6 @@ Port 457 is the Cloudflare Tunnel origin for `monitoring.markridgwell.com`, inte
 
 ### Home Automation
 
-- `home.markridgwell.com` → `http://192.168.150.150:8080`, also available on port **446** (HTTP direct)
 - `homeassistant.markridgwell.com` → `http://192.168.34.8:8123` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 - `audiobookshelf.markridgwell.com` → `http://192.168.150.16:13378` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 - `familiar.markridgwell.com` → `http://192.168.150.129:8081` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
@@ -194,16 +191,8 @@ Port 457 is the Cloudflare Tunnel origin for `monitoring.markridgwell.com`, inte
 
 ### Media
 
-- `photos.markridgwell.com` → `http://192.168.150.154:2283`, also available on port **450** (HTTP direct, X-Local header required)
+- `photos.markridgwell.com` → `http://192.168.150.154:2283` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
 
-#### Photos: X-Local header authentication (port 450)
-
-Port 450 is the Cloudflare Tunnel origin for `photos.markridgwell.com`. To prevent direct access that bypasses Cloudflare, Traefik validates a shared-secret header on all requests arriving on this port:
-
-- Requests with `X-Local: <PHOTOS_LOCAL_SECRET>` are forwarded to the Immich backend.
-- All other requests are rejected by the `traefik-api-token-middleware` plugin.
-
-**Configuration:** Set `PHOTOS_LOCAL_SECRET` in `.env`, then configure the Cloudflare Tunnel origin rule for `photos.markridgwell.com` to add the request header `X-Local: <same value>`. The Cloudflare dashboard path is: **Zero Trust → Networks → Tunnels → [your tunnel] → Public Hostnames → photos.markridgwell.com → Additional application settings → HTTP Settings → Request headers**.
 
 ### NuGet Registries
 
@@ -255,11 +244,9 @@ The ports below are plain HTTP used as Cloudflare Tunnel origin services.
 **Each hostname must have its own dedicated port**: Cloudflare Tunnel ingress rules
 route by hostname, and each rule maps to a single origin URL (including port).
 
-- **446** (TCP): Home Service, HTTP (Cloudflare Tunnel origin)
 - **447** (TCP): DeFi Service, HTTP (Cloudflare Tunnel origin)
 - **448** (TCP): NPM Registry, HTTP (Cloudflare Tunnel origin)
 - **449** (TCP): API NuGet Registry, HTTP (Cloudflare Tunnel origin)
-- **450** (TCP): Photos service, HTTP (Cloudflare Tunnel origin)
 - **452** (TCP): Pacman Cache, HTTP (Cloudflare Tunnel origin)
 - **453** (TCP): Flathub Repository, HTTP (Cloudflare Tunnel origin)
 - **455** (TCP): FunFair NuGet Registry, HTTP (Cloudflare Tunnel origin)

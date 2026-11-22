@@ -10,6 +10,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 
 ## [Unreleased]
 ### Security
+- Removed the public Cloudflare Tunnel paths for `photos.markridgwell.com` (port 450 entrypoint, `photos-direct-router` and the `X-Local` `photos-local-check` middleware with its `PHOTOS_LOCAL_SECRET`); the main photos route is now internal only via the `internal-only` middleware
 - Restricted the monitoring direct port (457) to POST requests only, since VictoriaMetrics has no built-in authentication and the route was previously open to queries and admin operations from anyone able to reach it.
 - Set a 2-year HSTS header (includeSubDomains, preload) on all HTTPS responses
 - Applied the existing internal-only private-network ipAllowList middleware to every internal-only router (homeassistant, audiobookshelf, ollama, caches, git-workflow, github-api, keys, cctv, dotnet, aur-repo, dns and the Traefik dashboard), so these hosts are refused when reached through Cloudflare Tunnel via loopback; documented the behaviour in the README
@@ -51,6 +52,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Defined the LAN address ranges once in the update script (with the ISP IPv6 prefix sourced from LAN_IPV6_PREFIX in .env) and substituted them into the internal-only middleware sourceRange
 ### Deprecated
 ### Removed
+- Removed `home.markridgwell.com` completely (routers on 443 and the port 446 entrypoint, `home-service`, `home-header`): the homepage VM is retired
 - IPv6 backend addresses from dns-01..dns-05 services; backends are IPv4-only for now
 - No-op Host-rewrite middlewares from the homeassistant, audiobookshelf, photos, dns and dns-01..dns-06, github-api, git-workflow, keys and monitoring routes (they set Host to the value the router already matches)
 - Removed aur.markridgwell.com routing (routers, service, header middleware, transport and aur entrypoint on port 451)

@@ -183,6 +183,8 @@ http:
       service: photos-service
       entryPoints:
         - web-general
+      middlewares:
+        - internal-only
 
     homeassistant-router:
       rule: "Host(`homeassistant.markridgwell.com`)"
@@ -227,22 +229,6 @@ http:
         - web-general
       middlewares:
         - internal-only
-
-    home-router:
-      rule: "Host(`home.markridgwell.com`)"
-      service: home-service
-      entryPoints:
-        - web-general
-      middlewares:
-        - home-header
-
-    home-http-router:
-      rule: "PathPrefix(`/`)"
-      service: home-service
-      entryPoints:
-        - web-home
-      middlewares:
-        - home-header
 
     docker-cache-router:
       rule: "Host(`docker-cache.markridgwell.com`)"
@@ -529,14 +515,6 @@ http:
       middlewares:
         - api-nuget-header
 
-    photos-direct-router:
-      rule: "Host(`photos.markridgwell.com`)"
-      service: photos-service
-      entryPoints:
-        - photos
-      middlewares:
-        - photos-local-check
-
     pacman-direct-router:
       rule: "Host(`pacman.markridgwell.com`)"
       service: pacman-service
@@ -683,15 +661,6 @@ http:
         # No healthCheck: no unauthenticated health endpoint is known for this app.
         servers:
           - url: "http://192.168.150.129:8081"
-
-    home-service:
-      loadBalancer:
-        healthCheck:
-          path: /api/healthz
-          interval: 30s
-          timeout: 5s
-        servers:
-          - url: "http://192.168.150.150:8080"
 
     docker-cache-service:
       loadBalancer:
@@ -1212,20 +1181,6 @@ http:
       headers:
         customRequestHeaders:
           Host: "aur-repo.local"
-
-    photos-local-check:
-      plugin:
-        traefik-api-token-middleware:
-          authenticationHeader: true
-          authenticationHeaderName: X-Local
-          removeTokenNameOnFailure: true
-          tokens:
-            - "${PHOTOS_LOCAL_SECRET}"
-
-    home-header:
-      headers:
-        customRequestHeaders:
-          Host: "home.local"
 
     docker-cache-header:
       headers:
