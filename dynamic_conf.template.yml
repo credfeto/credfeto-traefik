@@ -575,8 +575,8 @@ http:
           interval: 30s
           timeout: 5s
         servers:
-          - url: "https://192.168.150.200:7777"
-          - url: "https://192.168.150.201:7777"
+          - url: "https://192.168.210.200:7777"
+          - url: "https://192.168.210.201:7777"
 
     flathub-service:
       loadBalancer:
@@ -592,8 +592,8 @@ http:
           interval: 30s
           timeout: 5s
         servers:
-          - url: "https://192.168.150.200:7777"
-          - url: "https://192.168.150.201:7777"
+          - url: "https://192.168.210.200:7777"
+          - url: "https://192.168.210.201:7777"
 
     aur-repo-service:
       loadBalancer:

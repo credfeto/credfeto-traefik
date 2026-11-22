@@ -223,8 +223,8 @@ Each memory space on `memory.markridgwell.com` has its own path prefix and its o
 ### Linux Package Mirrors
 
 - `aur-repo.markridgwell.com` → `https://192.168.150.10:5555`, `https://192.168.150.20:5555` (internal only via the `internal-only` middleware; not reachable through Cloudflare Tunnel)
-- `pacman.markridgwell.com` → `https://192.168.150.200:7777`, `https://192.168.150.201:7777`, also available on port **452** (HTTP direct)
-- `flathub.markridgwell.com` → `https://192.168.150.200:7777`, `https://192.168.150.201:7777`, also available on port **453** (HTTP direct)
+- `pacman.markridgwell.com` → `https://192.168.210.200:7777`, `https://192.168.210.201:7777`, also available on port **452** (HTTP direct)
+- `flathub.markridgwell.com` → `https://192.168.210.200:7777`, `https://192.168.210.201:7777`, also available on port **453** (HTTP direct)
 
 ## Port Mappings
 
