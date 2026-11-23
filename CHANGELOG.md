@@ -62,6 +62,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Replaced the Docker-based deployment (traefik, cloudflared, watchtower containers) with native Arch Linux systemd services: traefik and cloudflared are now installed from pacman, traefik.yml is generated from a new traefik.template.yml, and pacman hooks restart each service when its package is upgraded, replacing watchtower's role
 - Declare wildcard TLS domains once on the web-general entrypoint instead of repeating them on every router
 - Defined the LAN address ranges once in the update script (with the ISP IPv6 prefix sourced from LAN_IPV6_PREFIX in .env) and substituted them into the internal-only middleware sourceRange
+- The proxy's egress firewall is now one nftables table (`inet prx_egress`) loaded atomically by `firewall/egress`, instead of firewalld policies and ipsets: the 10-minute refresh reloaded firewalld, and a firewalld killed mid-reload (by the OOM killer) left its block-everything table in place and cut the proxy off. `firewall/configure` removes the old policies and ipsets with one last reload
 ### Deprecated
 ### Removed
 - dev-cache-01/02.markridgwell.com and linux-cache-01/02.markridgwell.com routes, services and Host-header middlewares: they pointed at port 8080 on the cache VMs, which was only ever the Dozzle log viewer (still running unauthenticated on the dev caches, already removed from the linux caches so those health checks always failed). Container logs now go to VictoriaLogs

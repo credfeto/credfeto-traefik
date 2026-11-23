@@ -145,7 +145,7 @@ Each `dns*.markridgwell.com` host has two routers: a `-v6` router matching `Clie
 
 ## Egress firewall
 
-`./update` (step 8c) runs `firewall/configure`, which locks the proxy's outbound traffic down with a firewalld policy, `prx-egress`, the same way as the DNS servers. Inbound is already covered by step 8: Traefik runs on the host, so the public zone's rules filter it directly.
+`./update` (step 8c) runs `firewall/configure`, which locks the proxy's outbound traffic down with one nftables table, `inet prx_egress`, built and loaded by `firewall/egress`. Inbound is already covered by step 8: Traefik runs on the host, so the public zone's rules filter it directly.
 
 What the proxy may connect to:
 
@@ -153,7 +153,7 @@ What the proxy may connect to:
 - DNS to the fleet's DNS servers, NTP to the router, journald uploads to monitoring, ICMP
 - the Cloudflare tunnel (cloudflared, 7844 tcp/udp) and the Cloudflare API (ACME DNS challenge), Let's Encrypt, the Traefik plugin catalogue, GitHub, and the Arch package sources (the pacman mirrors in `/etc/pacman.d/mirrorlist`, chaotic-aur, pkgstats, the Arch WKD)
 
-Destinations without a stable address are firewalld ipsets that `proxy-egress-refresh.timer` refreshes every 10 minutes: names resolved from DNS, plus GitHub's and Cloudflare's published ranges (`firewall/github-egress-ranges` and `firewall/cloudflare-egress-ranges`). `proxy-firewall-sync.timer` (every 15 minutes) pulls the checkout and re-runs `firewall/configure` when anything under `firewall/` changed since the commit it last applied; route changes still need `./update`. The `Repo: Update egress ranges` workflow regenerates the two range files daily and commits any change to main, refusing a list that has shrunk by more than a fifth.
+`proxy-egress-refresh.timer` rebuilds the table 30 seconds after boot and then every 10 minutes: it re-reads the backends from `/etc/traefik/dynamic_conf.yml` and the mirrors from `/etc/pacman.d/mirrorlist`, resolves the names without a stable address (a name that does not resolve keeps its last good addresses), reads GitHub's and Cloudflare's published ranges (`firewall/github-egress-ranges` and `firewall/cloudflare-egress-ranges`), and only loads the table when it differs from the loaded one. The whole table, address sets included, is replaced in a single `nft -f` transaction: a refresh never makes firewalld reload, and a ruleset that fails to load leaves the previous one in place. firewalld keeps the host's base zones and never sees this table. `proxy-firewall-sync.timer` (every 15 minutes) pulls the checkout and re-runs `firewall/configure` when anything under `firewall/` changed since the commit it last applied; route changes still need `./update`. The `Repo: Update egress ranges` workflow regenerates the two range files daily and commits any change to main, refusing a list that has shrunk by more than a fifth.
 
 `PROXY_FIREWALL_ENFORCE` in `.env` is the only switch. Unset or anything other than `true` is observation mode: every rule is in place, but traffic that matches none of them still flows and is logged with the prefix `prx-egress-unmatched:` (rate-limited to 30 a minute). Run in observation mode first and check the journal for anything legitimate that is not covered:
 
@@ -161,7 +161,11 @@ Destinations without a stable address are firewalld ipsets that `proxy-egress-re
 sudo journalctl -k --since -1d | grep prx-egress-unmatched
 ```
 
-then set `PROXY_FIREWALL_ENFORCE=true` and run `./update`.
+then set `PROXY_FIREWALL_ENFORCE=true` and run `./update`. To see the live egress rules:
+
+```sh
+sudo nft list table inet prx_egress
+```
 
 ## Dashboard
 

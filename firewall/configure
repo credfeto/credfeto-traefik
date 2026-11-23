@@ -1,22 +1,26 @@
 #!/bin/sh
 
-# Locks the proxy's egress down with a firewalld policy, like the DNS servers.
-# Called by ../update (step 8c) as root, after dynamic_conf.yml is rendered.
+# Locks the proxy's egress down, like the DNS servers. Called by ../update
+# (step 8c) as root, after dynamic_conf.yml is rendered.
 #
-# Ingress is already handled by ../update step 8: Traefik runs on the host, not
-# in Docker, so the public zone's rich rules (80/443/853 from the private
+# Ingress is already handled by ../update step 8: Traefik runs on the host,
+# not in Docker, so the public zone's rich rules (80/443/853 from the private
 # networks) filter it directly.
 #
-# One policy, evaluated before the zones:
-#   prx-egress   HOST -> ANY: what the proxy itself may connect to.
+# The rules are one nftables table, inet prx_egress, built and loaded by
+# firewall/egress (see there), with one chain, host_out: what the proxy
+# itself may connect to. The whole table, address sets included, is replaced
+# in one nft transaction, so a refresh never reloads firewalld and a failed
+# load keeps the previous rules.
 #
 # The internal destinations are generated, not listed by hand: every backend
-# URL in the rendered /etc/traefik/dynamic_conf.yml (host and port) is allowed,
-# so a new route works as soon as ../update renders it.
+# URL in the rendered /etc/traefik/dynamic_conf.yml (host and port) is
+# allowed, re-read on every refresh, so a new route works as soon as
+# ../update renders it.
 #
-# PROXY_FIREWALL_ENFORCE=true in ../.env is the single enforcement knob: the
-# policy's target becomes DROP. Otherwise (the default) unmatched traffic still
-# flows and is only logged with the prefix "prx-egress-unmatched: ". The same
+# PROXY_FIREWALL_ENFORCE=true in ../.env is the single enforcement knob:
+# unmatched new connections are dropped. Otherwise (the default) they still
+# flow and are only logged with the prefix "prx-egress-unmatched: ". The same
 # rules serve both modes: run in observation mode, check the log for anything
 # legitimate, then enforce.
 
@@ -34,8 +38,8 @@ info() {
 [ "$(id -u)" -eq 0 ] || die "must run as root"
 
 # One run at a time: proxy-firewall-sync.timer can fire while ../update (or a
-# manual run) is still configuring, and concurrent firewall-cmd changes would
-# trip over each other.
+# manual run) is still configuring, and concurrent firewall changes would trip
+# over each other.
 exec 9> /run/lock/credfeto-traefik-firewall.lock
 flock 9
 
@@ -48,223 +52,46 @@ env_value() {
     grep -E "^[[:space:]]*$1[[:space:]]*=" "${ENV_FILE}" | tail -n 1 | cut -d= -f2- | sed 's/^[[:space:]]*//;s/[[:space:]]*$//;s/^"//;s/"$//'
 }
 
-TARGET="CONTINUE"
+ENFORCE="false"
 if [ "$(env_value PROXY_FIREWALL_ENFORCE)" = "true" ]; then
-    TARGET="DROP"
+    ENFORCE="true"
 fi
 
-# The fleet's DNS servers.
-DNS_V4="192.168.42.101 192.168.42.102 192.168.42.103 192.168.42.104 192.168.42.105 192.168.42.106"
-DNS_V6="2a02:8010:61d5:42::101 2a02:8010:61d5:42::102 2a02:8010:61d5:42::103 2a02:8010:61d5:42::104 2a02:8010:61d5:42::105 2a02:8010:61d5:42::106"
-# Central logging (journald uploads to VictoriaLogs on monitoring.lan).
-LOGS_V4="192.168.160.134"
-# NTP is the router's address on this host's VLAN, i.e. the default gateway.
-NTP_V4="$(ip -4 route show default | awk '/^default/ {print $3; exit}')"
-[ -n "${NTP_V4}" ] || die "no IPv4 default gateway to use as the NTP server"
-# GitHub Pages / raw content / release assets (Fastly).
-FASTLY="185.199.108.0/22 2606:50c0::/32"
-
-# Dynamic (CDN-fronted) destinations, kept fresh by refresh-egress-ipsets.
-# Keep in sync with DOMAIN_SLUGS there. ghnet and cfnet are the published
-# GitHub and Cloudflare ranges (hash:net): Cloudflare carries the tunnel
-# (cloudflared, 7844 tcp/udp) and the DNS API used for ACME DNS-01.
-# pacmir is every pacman mirror in /etc/pacman.d/mirrorlist (the proxies have
-# no package cache in front of them).
-SLUGS="github ghnet cfnet chaotic pkgstats archwkd acme trplug pacmir"
-
-CHANGED=false
-finish() {
-    if [ "${CHANGED}" = "true" ]; then
-        firewall-cmd --reload > /dev/null
-        CHANGED=false
-    fi
-}
-trap 'finish; exit 130' INT HUP TERM
-trap 'finish' EXIT
-
-ensure_policy() {
-    NAME="$1"
-    FROM="$2"
-    TO="$3"
-    if ! firewall-cmd --permanent --info-policy="${NAME}" > /dev/null 2>&1; then
-        firewall-cmd --permanent --new-policy="${NAME}" > /dev/null || die "Failed to create policy ${NAME}"
-        firewall-cmd --permanent --policy="${NAME}" --add-ingress-zone="${FROM}" > /dev/null || die "Failed to set ${NAME} ingress zone"
-        firewall-cmd --permanent --policy="${NAME}" --add-egress-zone="${TO}" > /dev/null || die "Failed to set ${NAME} egress zone"
-        CHANGED=true
-    fi
-    if [ "$(firewall-cmd --permanent --policy="${NAME}" --get-priority)" != "-10" ]; then
-        firewall-cmd --permanent --policy="${NAME}" --set-priority=-10 > /dev/null || die "Failed to set ${NAME} priority"
-        CHANGED=true
-    fi
-    if [ "$(firewall-cmd --permanent --policy="${NAME}" --get-target)" != "${TARGET}" ]; then
-        firewall-cmd --permanent --policy="${NAME}" --set-target="${TARGET}" > /dev/null || die "Failed to set ${NAME} target"
-        CHANGED=true
-    fi
-}
-
-# The policy's current rules, read once (one firewall-cmd query per rule makes
-# every run take minutes). A rule that is not listed verbatim is checked with
-# --query-rich-rule before being added.
-RULES_POLICY=""
-RULES=""
-ensure_rule() {
-    POLICY="$1"
-    RULE="$2"
-    if [ "${RULES_POLICY}" != "${POLICY}" ]; then
-        RULES="$(firewall-cmd --permanent --policy="${POLICY}" --list-rich-rules)"
-        RULES_POLICY="${POLICY}"
-    fi
-    if printf '%s\n' "${RULES}" | grep -Fqx -- "${RULE}"; then
-        return 0
-    fi
-    if ! firewall-cmd --permanent --policy="${POLICY}" --query-rich-rule="${RULE}" > /dev/null 2>&1; then
-        firewall-cmd --permanent --policy="${POLICY}" --add-rich-rule="${RULE}" > /dev/null || die "Failed to add ${POLICY} rule: ${RULE}"
-        CHANGED=true
-    fi
-}
-
-family_of() {
-    case "$1" in
-        *:*) echo ipv6 ;;
-        *) echo ipv4 ;;
-    esac
-}
-
-# allow_to POLICY PROTO PORT DESTINATION...
-allow_to() {
-    POLICY="$1"
-    PROTO="$2"
-    PORT="$3"
-    shift 3
-    for DST in "$@"; do
-        ensure_rule "${POLICY}" "rule family=\"$(family_of "${DST}")\" destination address=\"${DST}\" port protocol=\"${PROTO}\" port=\"${PORT}\" accept"
-    done
-}
-
-# allow_ipsets POLICY PROTO PORT SLUG...: to the v4 and v6 sets of each slug.
-allow_ipsets() {
-    POLICY="$1"
-    PROTO="$2"
-    PORT="$3"
-    shift 3
-    for SLUG in "$@"; do
-        ensure_rule "${POLICY}" "rule family=\"ipv4\" destination ipset=\"prx-egress-${SLUG}-v4\" port protocol=\"${PROTO}\" port=\"${PORT}\" accept"
-        ensure_rule "${POLICY}" "rule family=\"ipv6\" destination ipset=\"prx-egress-${SLUG}-v6\" port protocol=\"${PROTO}\" port=\"${PORT}\" accept"
-    done
-}
-
-# Prints "address port" for every backend URL in the rendered dynamic config:
-# `url: "scheme://host[:port]/..."`, with the scheme's default port when none
-# is given. IPv6 literals lose their brackets. Hostnames (not addresses) are
-# skipped: a rich rule needs an address, and every backend here is one.
-backend_targets() {
-    grep -oE 'url:[[:space:]]*"[a-z]+://[^"/]+' "${DYNAMIC_CONF}" \
-        | sed -E 's#^url:[[:space:]]*"##' \
-        | awk -F'://' '
-            {
-                scheme = $1; hostport = $2; port = (scheme == "https") ? 443 : 80
-                if (hostport ~ /^\[/) {
-                    host = substr(hostport, 2, index(hostport, "]") - 2)
-                    rest = substr(hostport, index(hostport, "]") + 1)
-                    if (rest ~ /^:[0-9]+$/) port = substr(rest, 2)
-                } else if (hostport ~ /:[0-9]+$/) {
-                    host = substr(hostport, 1, length(hostport) - length(substr(hostport, match(hostport, /:[0-9]+$/))))
-                    port = substr(hostport, RSTART + 1)
-                } else {
-                    host = hostport
-                }
-                if (host ~ /^[0-9.]+$/ || host ~ /:/) print host, port
-            }' \
-        | sort -u
-}
-
-# Prints "address port" for every TCP service address (`address: "host:port"`,
-# e.g. the DNS-over-TLS backends).
-tcp_backend_targets() {
-    grep -oE 'address:[[:space:]]*"[^"]+:[0-9]+"' "${DYNAMIC_CONF}" \
-        | sed -E 's#^address:[[:space:]]*"##; s#"$##; s#^\[##; s#\]:#:#' \
-        | sed -E 's#:([0-9]+)$# \1#' \
-        | awk '$1 ~ /^[0-9.]+$/ || $1 ~ /:/' \
-        | sort -u
-}
-
-firewall-cmd --state > /dev/null 2>&1 || die "firewalld is not running"
+# firewall/egress reads the backends from here on every run.
 [ -r "${DYNAMIC_CONF}" ] || die "${DYNAMIC_CONF} not found - run ../update first"
-info "Configuring egress firewall (policy target ${TARGET})..."
 
-# --- ipsets (entries are maintained by refresh-egress-ipsets) ---
-EXISTING_IPSETS="$(firewall-cmd --permanent --get-ipsets)"
-IPSET_CREATED=false
-for SLUG in ${SLUGS}; do
-    TYPE="hash:ip"
-    case "${SLUG}" in
-        ghnet | cfnet) TYPE="hash:net" ;;
-    esac
-    for FAM in v4:inet v6:inet6; do
-        NAME="prx-egress-${SLUG}-${FAM%%:*}"
-        if ! printf '%s\n' "${EXISTING_IPSETS}" | tr ' ' '\n' | grep -qx "${NAME}"; then
-            firewall-cmd --permanent --new-ipset="${NAME}" --type="${TYPE}" --option=family="${FAM#*:}" > /dev/null || die "Failed to create ipset ${NAME}"
-            IPSET_CREATED=true
-            CHANGED=true
+# --- Retire the firewalld policies and ipsets an earlier version used. Their
+# refresh reloaded firewalld every 10 minutes, and a firewalld killed
+# mid-reload (for example by the OOM killer) leaves its block-everything table
+# behind. One last reload removes them; after this nothing here reloads
+# firewalld.
+if command -v firewall-cmd > /dev/null 2>&1 && firewall-cmd --state > /dev/null 2>&1; then
+    RETIRED=false
+    for POLICY in prx-egress; do
+        if firewall-cmd --permanent --info-policy="${POLICY}" > /dev/null 2>&1; then
+            firewall-cmd --permanent --delete-policy="${POLICY}" > /dev/null || die "Failed to delete policy ${POLICY}"
+            RETIRED=true
         fi
     done
-done
-# A new permanent ipset is not a valid rich-rule destination until firewalld
-# reloads (INVALID_IPSET otherwise).
-if [ "${IPSET_CREATED}" = "true" ]; then
-    firewall-cmd --reload > /dev/null
+    for IPSET in $(firewall-cmd --permanent --get-ipsets); do
+        case "${IPSET}" in
+            prx-egress-*)
+                firewall-cmd --permanent --delete-ipset="${IPSET}" > /dev/null || die "Failed to delete ipset ${IPSET}"
+                RETIRED=true
+                ;;
+        esac
+    done
+    if [ "${RETIRED}" = "true" ]; then
+        info "Removing the old firewalld egress policies..."
+        firewall-cmd --reload > /dev/null
+    fi
 fi
+rm -f /usr/local/bin/proxy-refresh-egress-ipsets
 
-ensure_policy prx-egress HOST ANY
-# ICMPv6 is fundamental (NDP, PMTU discovery); IGMP and DHCPv6 are link-local
-# housekeeping.
-ensure_rule prx-egress 'rule family="ipv6" protocol value="ipv6-icmp" accept'
-ensure_rule prx-egress 'rule family="ipv4" protocol value="icmp" accept'
-ensure_rule prx-egress 'rule family="ipv4" protocol value="igmp" accept'
-allow_to prx-egress udp 547 ff02::1:2
-# The host talking to its own (Docker) containers, if any.
-ensure_rule prx-egress 'rule family="ipv4" destination address="172.16.0.0/12" accept'
-ensure_rule prx-egress 'rule family="ipv6" destination address="fd00::/8" accept'
-for PROTO in udp tcp; do
-    # shellcheck disable=SC2086 # deliberate word lists
-    allow_to prx-egress "${PROTO}" 53 ${DNS_V4} ${DNS_V6}
-done
-allow_to prx-egress udp 123 "${NTP_V4}"
-# shellcheck disable=SC2086
-allow_to prx-egress tcp 9428 ${LOGS_V4}
+info "Configuring egress firewall (enforce ${ENFORCE})..."
 
-# Every backend Traefik routes to (and health-checks).
-BACKENDS="$(backend_targets; tcp_backend_targets)"
-[ -n "${BACKENDS}" ] || die "no backend URLs found in ${DYNAMIC_CONF}"
-# A here-document, not a pipe: a piped while loop runs in a subshell, where
-# CHANGED and die would not reach this script.
-while read -r ADDR PORT; do
-    allow_to prx-egress tcp "${PORT}" "${ADDR}"
-done << BACKENDS_EOF
-${BACKENDS}
-BACKENDS_EOF
-
-# Internet: the Cloudflare tunnel (cloudflared) and DNS API, Let's Encrypt,
-# the Traefik plugin catalogue, GitHub (git pull, plugin sources) and the Arch
-# package sources.
-for PROTO in tcp udp; do
-    allow_ipsets prx-egress "${PROTO}" 7844 cfnet
-done
-# shellcheck disable=SC2086
-allow_ipsets prx-egress tcp 443 ${SLUGS}
-# shellcheck disable=SC2086
-allow_to prx-egress tcp 443 ${FASTLY}
-
-# Catch-all, evaluated last: log anything not allowed above (the policy target
-# then accepts or drops it).
-for FAMILY in ipv4 ipv6; do
-    ensure_rule prx-egress "rule priority=\"32767\" family=\"${FAMILY}\" log prefix=\"prx-egress-unmatched: \" level=\"info\" limit value=\"30/m\""
-done
-
-finish
-
-# --- ipset refresh timer ---
-install -m 755 "${SCRIPT_DIR}/refresh-egress-ipsets" /usr/local/bin/proxy-refresh-egress-ipsets
+# --- The egress table and its refresh timer ---
+install -m 755 "${SCRIPT_DIR}/egress" /usr/local/bin/proxy-egress
 install -d -m 755 /usr/local/share/credfeto-traefik
 install -m 644 "${SCRIPT_DIR}/github-egress-ranges" /usr/local/share/credfeto-traefik/github-egress-ranges
 install -m 644 "${SCRIPT_DIR}/cloudflare-egress-ranges" /usr/local/share/credfeto-traefik/cloudflare-egress-ranges
@@ -278,6 +105,11 @@ ln -sfn "${SCRIPT_DIR}/sync" /usr/local/sbin/proxy-firewall-sync
 install -m 644 "${SCRIPT_DIR}/proxy-firewall-sync.service" /etc/systemd/system/proxy-firewall-sync.service
 install -m 644 "${SCRIPT_DIR}/proxy-firewall-sync.timer" /etc/systemd/system/proxy-firewall-sync.timer
 
+# The settings firewall/egress reads, written before the timers restart so
+# that no run picks up stale ones. Keep the paths in sync with firewall/egress.
+install -d -m 755 /var/lib/credfeto-traefik
+printf '%s\n' "${ENFORCE}" > /var/lib/credfeto-traefik/egress-enforce
+
 systemctl daemon-reload
 for UNIT in proxy-egress-refresh.timer proxy-firewall-sync.timer; do
     systemctl enable "${UNIT}" > /dev/null 2>&1
@@ -285,12 +117,11 @@ for UNIT in proxy-egress-refresh.timer proxy-firewall-sync.timer; do
     # schedule otherwise.
     systemctl restart "${UNIT}"
 done
-# Populate the ipsets now rather than at the timer's first run.
-/usr/local/bin/proxy-refresh-egress-ipsets
+# Load the table now rather than at the timer's first run.
+/usr/local/bin/proxy-egress
 
 # Record the commit whose firewall config is now live; firewall/sync compares
 # against it. Keep the path in sync with firewall/sync.
-install -d -m 755 /var/lib/credfeto-traefik
 git -C "${SCRIPT_DIR}" rev-parse HEAD > /var/lib/credfeto-traefik/firewall-applied-head
 
-info "Egress firewall configured (policy target ${TARGET})."
+info "Egress firewall configured (enforce ${ENFORCE})."
