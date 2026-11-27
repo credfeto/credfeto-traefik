@@ -59,7 +59,7 @@ LAN_IPV6_PREFIX=2a02:8010:61d5::/48
 | `MEMORY_WIKI_USERS` | Yes | `./update` | Basic auth user for `wiki.markridgwell.com`. One `htpasswd -nbB mark '<password>'` line, with single `$` characters and no quotes; holds one user only. |
 | `LAN_IPV6_PREFIX` | Yes | `./update` | The LAN's ISP-assigned global IPv6 prefix (e.g. `2a02:8010:61d5::/48`). `./update` uses it for both the firewall rules and the `internal-only` middleware's `sourceRange`, so a renumbering is a single edit followed by re-running `./update`. |
 | `PROXY_FIREWALL_ENFORCE` | No | `firewall/configure` | `true` makes the egress firewall drop anything it does not allow. Unset or anything else is observation mode (log only). See "Egress firewall". |
-| `FUNFAIR_MCP_TOKEN` | No | `./update` | Bearer token for `monitoring.markridgwell.com/mcp-funfair`, the same value as `MCP_FUNFAIR_AUTH_TOKEN` on the monitoring VM. Requests must include `Authorization: Bearer <value>`. Unset or empty, `./update` uses a random token, so the route stays closed. Generate with `openssl rand -hex 32`. |
+| `MCP_FUNFAIR_AUTH_TOKEN` | No | `./update` | Bearer token for `monitoring.markridgwell.com/mcp-funfair`, the same variable name and value as on the monitoring VM. Requests must include `Authorization: Bearer <value>`. Unset or empty, `./update` uses a random token, so the route stays closed. Generate with `openssl rand -hex 32`. |
 
 ### 2. Start Traefik
 
@@ -205,9 +205,9 @@ Port 457 is the Cloudflare Tunnel origin for `monitoring.markridgwell.com`, inte
 
 `monitoring.markridgwell.com/mcp-funfair` forwards to the restricted Funfair MCP server on the monitoring VM (`http://192.168.160.134:8084`). It is reachable from outside: its router listens on `web-general` and on port 457, and takes any method, so it is the one exception to the POST-only rule above. A request without the token never reaches the MCP server:
 
-- The `traefik-api-token-middleware` plugin checks `Authorization: Bearer <token>` against `FUNFAIR_MCP_TOKEN` and rejects requests without a matching token. Unlike the memory spaces, it keeps the header on success, because the MCP server checks the same value (`MCP_FUNFAIR_AUTH_TOKEN` on the monitoring VM).
+- The `traefik-api-token-middleware` plugin checks `Authorization: Bearer <token>` against `MCP_FUNFAIR_AUTH_TOKEN` and rejects requests without a matching token. Unlike the memory spaces, it keeps the header on success, because the MCP server checks the same value (the same `MCP_FUNFAIR_AUTH_TOKEN` on the monitoring VM).
 - Traefik then rewrites the path to `/mcp` before forwarding the request.
-- With `FUNFAIR_MCP_TOKEN` unset, `./update` uses a random token that no client knows, so the route stays closed.
+- With `MCP_FUNFAIR_AUTH_TOKEN` unset, `./update` uses a random token that no client knows, so the route stays closed.
 
 ### Home Automation
 

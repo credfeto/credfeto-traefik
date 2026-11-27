@@ -1144,7 +1144,7 @@ http:
           bearerHeaderName: Authorization
           removeHeadersOnSuccess: false
           tokens:
-            - "${FUNFAIR_MCP_TOKEN}"
+            - "${MCP_FUNFAIR_AUTH_TOKEN}"
     monitoring-funfair-mcp-path:
       replacePath:
         path: /mcp
