@@ -10,71 +10,72 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 
 ## [Unreleased]
 ### Security
-- Egress lockdown on the proxies (`firewall/configure`, run by `./update` step 8c): a firewalld policy allows only the backends in the rendered dynamic config, DNS, NTP, log shipping, the Cloudflare tunnel and API, Let's Encrypt, the Traefik plugin catalogue, GitHub and the Arch package sources, with CDN-fronted destinations kept in ipsets refreshed every 10 minutes. `proxy-firewall-sync.timer` re-applies it when the firewall config changes, and the daily `Repo: Update egress ranges` workflow refreshes the GitHub and Cloudflare ranges. Observation mode (log unmatched traffic, drop nothing) until `PROXY_FIREWALL_ENFORCE=true`
+- Proxy egress allow-list (`firewall/configure`); logs only until `PROXY_FIREWALL_ENFORCE=true`
 - DNS-over-TLS (`dot` TLS option) now requires TLS 1.3, matching the default for every other route
-- Removed the public Cloudflare Tunnel paths for `photos.markridgwell.com` (port 450 entrypoint, `photos-direct-router` and the `X-Local` `photos-local-check` middleware with its `PHOTOS_LOCAL_SECRET`); the main photos route is now internal only via the `internal-only` middleware
-- Restricted the monitoring direct port (457) to POST requests only, since VictoriaMetrics has no built-in authentication and the route was previously open to queries and admin operations from anyone able to reach it.
+- Removed the Cloudflare Tunnel paths for `photos.markridgwell.com`; photos is now internal only
+- Restricted monitoring port 457 to POST only, as VictoriaMetrics has no authentication
 - Set a 2-year HSTS header (includeSubDomains, preload) on all HTTPS responses
-- Applied the existing internal-only private-network ipAllowList middleware to every internal-only router (homeassistant, audiobookshelf, ollama, caches, git-workflow, github-api, keys, cctv, dotnet, aur-repo, dns and the Traefik dashboard), so these hosts are refused when reached through Cloudflare Tunnel via loopback; documented the behaviour in the README
+- Applied the internal-only middleware to all internal routers so Cloudflare Tunnel is refused
 ### Added
 - monitoring.markridgwell.com/mcp-funfair to the Funfair MCP server (8084), token checked in Traefik
-- fail2ban `traefik-auth` jail (fail2ban/traefik.local, installed by `./update` where fail2ban is present): bans a client after 5 HTTP 401s in 10 minutes on any route, reading Traefik's access log from the journal. 403s are not counted (the github-api cache passes GitHub's 403s through)
-- logs.markridgwell.com routing to VictoriaLogs on the monitoring VM (192.168.150.134:9428, web UI at /select/vmui, health check /health) and logs.markridgwell.com/mcp to the mcp-victorialogs MCP server (8083), both LAN only via the internal-only middleware (neither has authentication)
-- DNS-over-TLS for `dns.markridgwell.com` on port 853 (LAN/Tailscale only via an ipAllowList): Traefik terminates TLS with the wildcard certificate and load-balances the DNS-over-TCP stream across the six Technitium nodes' DNS-over-TCP-PROXY port 538 using PROXY protocol v2, so client addresses are preserved; `./update` opens 853/tcp for private networks
+- fail2ban `traefik-auth` jail: bans a client after 5 HTTP 401s in 10 minutes on any route
+- logs.markridgwell.com to VictoriaLogs (9428) and /mcp to mcp-victorialogs (8083), both LAN only
+- DNS-over-TLS for `dns.markridgwell.com` on port 853 (LAN only), proxied to Technitium over TCP
 - docs/ folder with architecture diagram showing repository folder structure
-- grafana.markridgwell.com host routing to Grafana on the monitoring VM (192.168.150.134:3000), LAN only via the internal-only middleware
-- grafana.markridgwell.com/mcp and monitoring.markridgwell.com/mcp routing to the mcp-grafana (8082) and mcp-victoriametrics (8081) MCP servers on the monitoring VM, LAN only via the internal-only middleware (the MCP servers have no authentication)
+- grafana.markridgwell.com to Grafana on the monitoring VM (192.168.150.134:3000), LAN only
+- /mcp on grafana and monitoring to mcp-grafana (8082) and mcp-victoriametrics (8081), LAN only
 - cctv.markridgwell.com host routing to 192.168.60.180 over self-signed TLS
 - keys.markridgwell.com zone pointing at 192.168.150.220:8081 using the wildcard certificate
 - dns-05.markridgwell.com host routing to dual-stack backend 192.168.42.105 / 2a02:8010:61d5:42::105
 - dns-06.markridgwell.com host routing to backend 192.168.42.106
-- IPv6 support for the Docker network (NAT66 via the host's global address) so Traefik and backends can use IPv6
-- IPv6 backend addresses (2a02:8010:61d5:42::101-106) restored for dns.markridgwell.com and dns-01..dns-06; IPv6 clients now route to the IPv6 backend via a ClientIP()-matched router, everything else stays on IPv4
-- monitoring.markridgwell.com routing to 192.168.150.134:8428, with a dedicated Cloudflare Tunnel origin port (457) alongside the SNI/HTTPS route
-- Add active health checks to the DNS routers - RFC 8484 DoH probe for the DNS-over-HTTPS service and the unauthenticated /api/status probe for the Technitium admin console services, so unhealthy DNS servers are automatically taken out of rotation
-- Add health checks to photos, homeassistant, home, defi, linux-cache-01/02, dev-cache-01/02, github-api, cctv, keys and monitoring services (issue #37 Tier A/A'), each verified against the actual backend's own source or documented API behaviour
-- Added Traefik failover services so IPv6-only DNS routers fall back to the IPv4 backend pool when all IPv6 backends are unhealthy, instead of returning an error
+- IPv6 for the Docker network (NAT66 via the host's global address) so Traefik and backends use it
+- IPv6 backends restored for dns and dns-01..dns-06, used by IPv6 clients via a ClientIP() router
+- monitoring.markridgwell.com to 192.168.150.134:8428, plus Cloudflare Tunnel origin port 457
+- Add DNS health checks (DoH probe, Technitium /api/status) so unhealthy servers leave rotation
+- Health checks on photos, homeassistant, home, defi, caches, github-api, cctv, keys, monitoring
+- Failover services let IPv6 DNS routers fall back to the IPv4 pool when all IPv6 backends fail
 - Accept HTTP on port 80 and redirect it to HTTPS on all hosts
-- Internal-only route for familiar.markridgwell.com proxying to http://192.168.150.129:8081, restricted to private network ranges and the LAN's IPv6 prefix 2a02:8010:61d5::/48 (loopback excluded) by a new reusable internal-only middleware so it cannot be reached through Cloudflare Tunnel
-- Workflow MCP server reachable at workflow-mcp.markridgwell.com, restricted to the internal network so it cannot be reached through Cloudflare Tunnel
-- memory.markridgwell.com (/dev and /netadmin Basic Memory MCP spaces, each with its own bearer token via traefik-api-token-middleware) and wiki.markridgwell.com (basic auth) routing to the credfeto-memory-docker host at 192.168.150.30; new required .env values MEMORY_DEV_TOKEN, MEMORY_NETADMIN_TOKEN, MEMORY_WIKI_USERS
+- familiar.markridgwell.com to 192.168.150.129:8081, LAN only via a new internal-only middleware
+- Workflow MCP server at workflow-mcp.markridgwell.com, internal only (not via Cloudflare Tunnel)
+- memory (/dev, /netadmin MCP) and wiki routes to 192.168.150.30; needs MEMORY_* .env values
+- edge-familiar.markridgwell.com route to the Familiar webhook listener (port 8083), internal only
 ### Fixed
-- `./update` now re-runs itself after `git pull`, so changes to the update script take effect on the same run instead of the next one
-- DNS-over-TLS on port 853 rejected Android Private DNS: clients offering ALPN `dot` failed the handshake with `no_application_protocol`; the DoT router now uses a `dot` TLS option with `alpnProtocols: [dot]`
-- YAML document start markers added to docker-compose.yml, dynamic_conf.template.yml, and traefik.yml to satisfy ansible-lint
+- `./update` re-runs itself after `git pull`, so update script changes apply on the same run
+- DoT on 853 rejected Android Private DNS (ALPN `dot`); the router now uses a `dot` TLS option
+- YAML document start markers added to the compose, dynamic and static configs for ansible-lint
 - watchtower missing a restart policy, leaving it stopped after a Docker daemon restart
-- api-nuget, funfair-nuget, funfair-prerelease-nuget and dotnet health checks were all silently probing the same default nginx vhost (builds.dotnet.local) instead of their own, since health checks bypass router middleware and the shared :5555 nginx has no default_server; added hostname: to each so they probe their own vhost, and added the missing npm health check the same way
-- audiobookshelf-service pointed at port 8080, which is actually Dozzle on that host - Audiobookshelf itself is published on port 13378; also adds a /healthcheck health check now that the port is correct
-- pacman-service and flathub-service health checks were silently probing the wrong :7777 nginx vhost (health checks bypass router middleware, and the shared :7777 backend has no default_server, so pacman's probe was hitting flathub.local's /ping instead of its own); added hostname: to each so they probe their own vhost, and corrected flathub's serversTransport serverName and flathub-header Host from flathub.markridgwell.com to flathub.local to match the backend's real vhost name
-- traefik.service failed to start on a real Arch host: /etc/traefik was root:root with no group/other access, blocking the traefik user's own systemd unit from even reading traefik.yml, dynamic_conf.yml was root:root 600 so traefik couldn't read its routing config either, and ACME storage was pointed at a subdirectory (/etc/traefik/acme/acme.json) that the packaged unit's ProtectSystem=strict/ReadWritePaths sandbox doesn't allow writing to; storage moved to the flat /etc/traefik/acme.json path the unit actually allow-lists, and update now sets correct ownership/permissions on all three
-- Every router relying on Let's Encrypt now explicitly declares the *.markridgwell.com wildcard as its certResolver domain, instead of leaving it unstated. Without an explicit domain, Traefik resolves each such router's certificate independently at startup, racing the wildcard's own issuance; on a cold cert store (no cached wildcard yet) this made every router request its own individual DNS-01 certificate in parallel, which failed outright for ollama.markridgwell.com since it has no public Cloudflare DNS zone (it's an internal-only host, never meant to get its own cert)
-- traefik-api-token-middleware (backing photos-local-check) failed to load: the packaged unit's ProtectSystem=strict leaves no writable working directory for the plugin's own plugins-storage folder, which took the plugin down and made photos-direct-router invalid entirely. update now gives traefik.service a real writable WorkingDirectory=/var/lib/traefik, allow-listed via an added ReadWritePaths=
-- README listed the wrong audiobookshelf backend port (8080, which is Dozzle); it now matches the proxy's 13378
-- README now documents the cctv.markridgwell.com and keys.markridgwell.com routes, which were missing from the service list
-- README "Adding a new service" example used a non-existent web-secure entrypoint and omitted the shared wildcard tls.domains block
-- ACME DNS-01 renewals failed every day from 2026-10-18 and the wildcard certificate expired on 2026-11-17, because the network redirects all outbound port 53 to the internal resolvers, which refuse the non-recursive queries lego sends to the authoritative Cloudflare nameservers. Skip only that authoritative check (propagation.disableANSChecks), keep the recursive check through the configured resolvers, and give it 10 minutes (CLOUDFLARE_PROPAGATION_TIMEOUT=600 in the systemd override) to ride out negative caching
+- NuGet and dotnet health checks hit the wrong vhost; now set hostname:, plus a new npm check
+- audiobookshelf-service used port 8080 (Dozzle); now 13378 with a /healthcheck health check
+- pacman/flathub checks hit the wrong vhost; added hostname: and use flathub.local for flathub
+- traefik.service failed to start on Arch; fixed config permissions and moved ACME storage
+- Routers declare the *.markridgwell.com wildcard, so none requests its own cert (ollama failed)
+- Token plugin failed to load; traefik.service now has a writable /var/lib/traefik working dir
+- README gave the wrong audiobookshelf port (8080, Dozzle); it now matches the proxy's 13378
+- README now lists the cctv.markridgwell.com and keys.markridgwell.com routes, which were missing
+- README "Adding a new service" used a non-existent web-secure entrypoint and no tls.domains
+- ACME renewals failed via redirected port 53 and the cert expired; skip ANS checks, wait 10 min
 - /mcp-funfair token renamed MCP_FUNFAIR_AUTH_TOKEN to match monitoring; update chmods .env to 600
 ### Changed
-- Linux package cache backends (pacman, flathub) moved to the caches' addresses on the new LinuxCaches VLAN 21: `https://192.168.210.200:7777` and `https://192.168.210.201:7777` (were 192.168.150.200/201)
-- Dev package cache backends (api-nuget, funfair-nuget, funfair-prerelease-nuget, npm, dotnet) moved to the caches' addresses on the new Caches VLAN 20: `https://192.168.200.100:5555` and `https://192.168.200.101:5555` (were 192.168.150.100/101)
-- familiar.markridgwell.com backend moved to the familiar VM's address on the new Familiar VLAN 19: `http://192.168.190.129:8081` (was 192.168.150.129)
-- Traefik access log only records failed (4xx/5xx) or slow (>5s) requests: successful requests, mostly every host's telegraf push, were ~16k lines an hour per proxy and nothing read them
-- Monitoring VM backends (VictoriaMetrics 8428, Grafana 3000, mcp-victoriametrics 8081, mcp-grafana 8082, VictoriaLogs 9428, mcp-victorialogs 8083) moved to its new address on the Monitoring VLAN 16: `192.168.160.134` (was `192.168.150.134`)
-- Re-addressed dns-01..dns-04 backends to 192.168.42.101-104 (was .251-.254) with new dual-stack IPv6 addresses 2a02:8010:61d5:42::101-104
-- Replaced the Docker-based deployment (traefik, cloudflared, watchtower containers) with native Arch Linux systemd services: traefik and cloudflared are now installed from pacman, traefik.yml is generated from a new traefik.template.yml, and pacman hooks restart each service when its package is upgraded, replacing watchtower's role
-- Declare wildcard TLS domains once on the web-general entrypoint instead of repeating them on every router
-- Defined the LAN address ranges once in the update script (with the ISP IPv6 prefix sourced from LAN_IPV6_PREFIX in .env) and substituted them into the internal-only middleware sourceRange
-- The proxy's egress firewall is now one nftables table (`inet prx_egress`) loaded atomically by `firewall/egress`, instead of firewalld policies and ipsets: the 10-minute refresh reloaded firewalld, and a firewalld killed mid-reload (by the OOM killer) left its block-everything table in place and cut the proxy off. `firewall/configure` removes the old policies and ipsets with one last reload
+- Linux cache backends (pacman, flathub) moved to LinuxCaches VLAN 21: 192.168.210.200/201:7777
+- Dev cache backends (NuGet, npm, dotnet) moved to Caches VLAN 20: 192.168.200.100/101:5555
+- familiar.markridgwell.com moved to Familiar VLAN 19: 192.168.190.129:8081 (was 192.168.150.129)
+- Access log keeps only 4xx/5xx or slow (>5s) requests, dropping ~16k unread lines an hour
+- Monitoring VM backends moved to Monitoring VLAN 16: 192.168.160.134 (was 192.168.150.134)
+- dns-01..dns-04 re-addressed to 192.168.42.101-104 and 2a02:8010:61d5:42::101-104 (was .251-.254)
+- Docker deployment replaced by native Arch systemd services; pacman hooks replace watchtower
+- Declare wildcard TLS domains once on the web-general entrypoint, not on every router
+- LAN ranges defined once in update (IPv6 prefix from LAN_IPV6_PREFIX) and fed to internal-only
+- Egress firewall now one atomic nftables table (`inet prx_egress`), replacing fragile firewalld
 ### Deprecated
 ### Removed
-- dev-cache-01/02.markridgwell.com and linux-cache-01/02.markridgwell.com routes, services and Host-header middlewares: they pointed at port 8080 on the cache VMs, which was only ever the Dozzle log viewer (still running unauthenticated on the dev caches, already removed from the linux caches so those health checks always failed). Container logs now go to VictoriaLogs
-- Removed `home.markridgwell.com` completely (routers on 443 and the port 446 entrypoint, `home-service`, `home-header`): the homepage VM is retired
+- dev-cache-01/02 and linux-cache-01/02 routes (they only reached Dozzle); logs go to VictoriaLogs
+- Removed `home.markridgwell.com` entirely, including port 446: the homepage VM is retired
 - IPv6 backend addresses from dns-01..dns-05 services; backends are IPv4-only for now
-- No-op Host-rewrite middlewares from the homeassistant, audiobookshelf, photos, dns and dns-01..dns-06, github-api, git-workflow, keys and monitoring routes (they set Host to the value the router already matches)
-- Removed aur.markridgwell.com routing (routers, service, header middleware, transport and aur entrypoint on port 451)
+- No-op Host-rewrite middlewares that set Host to the value the router already matches
+- Removed aur.markridgwell.com routing (routers, service, middleware, transport, port 451)
 - Removed docker-registry.markridgwell.com routing as the registry is no longer running
 ### Deployment Changes
-- Firewall rules from ./update now also allow the LAN's global IPv6 prefix 2a02:8010:61d5::/48 to reach ports 80 and 443; re-run ./update to apply
+- Firewall rules also allow the LAN's global IPv6 /48 to ports 80 and 443; re-run ./update
 
 <!--
 Releases that have at least been deployed to staging, BUT NOT necessarily released to live.  Changes should be moved from [Unreleased] into here as they are merged into the appropriate release branch

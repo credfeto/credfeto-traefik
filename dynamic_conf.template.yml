@@ -238,6 +238,14 @@ http:
       middlewares:
         - internal-only
 
+    familiar-edge-router:
+      rule: "Host(`edge-familiar.markridgwell.com`)"
+      service: familiar-edge-service
+      entryPoints:
+        - web-general
+      middlewares:
+        - internal-only
+
     docker-cache-router:
       rule: "Host(`docker-cache.markridgwell.com`)"
       service: docker-cache-service
@@ -661,6 +669,11 @@ http:
         # No healthCheck: no unauthenticated health endpoint is known for this app.
         servers:
           - url: "http://192.168.190.129:8081"
+    familiar-edge-service:
+      loadBalancer:
+        # Inbound webhooks (the edge listener, FAMILIAR_EDGE_PORT); no health endpoint.
+        servers:
+          - url: "http://192.168.190.129:8083"
 
     docker-cache-service:
       loadBalancer:
