@@ -30,6 +30,8 @@ repo_dir=$(CDPATH="" cd -- "$(dirname -- "$0")" && pwd)
 
 # 0. Validate .env
 [ -f "${repo_dir}/.env" ] || die ".env file not found - copy .env.example and fill in your credentials"
+# .env holds the Cloudflare and route tokens; traefik.service reads it as root.
+chmod 600 "${repo_dir}/.env" || die "Could not restrict .env to its owner (chmod 600)"
 cd "${repo_dir}"
 check_env_var CLOUDFLARE_EMAIL
 check_env_var CF_DNS_API_TOKEN
@@ -77,13 +79,13 @@ CLOUDFLARE_EMAIL=$(grep -E "^CLOUDFLARE_EMAIL=" .env | cut -d '=' -f2-)
 MEMORY_DEV_TOKEN=$(grep -E "^MEMORY_DEV_TOKEN=" .env | cut -d '=' -f2-)
 MEMORY_NETADMIN_TOKEN=$(grep -E "^MEMORY_NETADMIN_TOKEN=" .env | cut -d '=' -f2-)
 MEMORY_WIKI_USERS=$(grep -E "^MEMORY_WIKI_USERS=" .env | cut -d '=' -f2-)
-FUNFAIR_MCP_TOKEN=$(grep -E "^FUNFAIR_MCP_TOKEN=" .env | cut -d '=' -f2-)
+MCP_FUNFAIR_AUTH_TOKEN=$(grep -E "^MCP_FUNFAIR_AUTH_TOKEN=" .env | cut -d '=' -f2-)
 
-# FUNFAIR_MCP_TOKEN is optional. Without it, the /mcp-funfair route gets a
+# MCP_FUNFAIR_AUTH_TOKEN is optional. Without it, the /mcp-funfair route gets a
 # random token no client knows, so it stays closed rather than open.
-if [ -z "${FUNFAIR_MCP_TOKEN}" ]; then
-    FUNFAIR_MCP_TOKEN=$(od -An -N32 -tx1 /dev/urandom | tr -d ' \n')
-    info "FUNFAIR_MCP_TOKEN not set in .env - the /mcp-funfair route stays closed"
+if [ -z "${MCP_FUNFAIR_AUTH_TOKEN}" ]; then
+    MCP_FUNFAIR_AUTH_TOKEN=$(od -An -N32 -tx1 /dev/urandom | tr -d ' \n')
+    info "MCP_FUNFAIR_AUTH_TOKEN not set in .env - the /mcp-funfair route stays closed"
 fi
 
 # LAN ranges, defined once: used for both the firewall rules (step 8) and the
@@ -117,9 +119,9 @@ rm -f "${rendered_traefik_yml}"
 # shellcheck disable=SC2016
 MEMORY_DEV_TOKEN="${MEMORY_DEV_TOKEN}" \
 MEMORY_NETADMIN_TOKEN="${MEMORY_NETADMIN_TOKEN}" MEMORY_WIKI_USERS="${MEMORY_WIKI_USERS}" \
-FUNFAIR_MCP_TOKEN="${FUNFAIR_MCP_TOKEN}" \
+MCP_FUNFAIR_AUTH_TOKEN="${MCP_FUNFAIR_AUTH_TOKEN}" \
 LAN_SOURCE_RANGES="${LAN_SOURCE_RANGES}" \
-envsubst '${MEMORY_DEV_TOKEN} ${MEMORY_NETADMIN_TOKEN} ${MEMORY_WIKI_USERS} ${FUNFAIR_MCP_TOKEN} ${LAN_SOURCE_RANGES}' \
+envsubst '${MEMORY_DEV_TOKEN} ${MEMORY_NETADMIN_TOKEN} ${MEMORY_WIKI_USERS} ${MCP_FUNFAIR_AUTH_TOKEN} ${LAN_SOURCE_RANGES}' \
     < dynamic_conf.template.yml > /etc/traefik/dynamic_conf.yml \
     || die "Failed to generate dynamic_conf.yml"
 # traefik (not root) reads this at runtime via the file provider, and it

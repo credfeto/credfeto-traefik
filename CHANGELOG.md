@@ -53,6 +53,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - README now documents the cctv.markridgwell.com and keys.markridgwell.com routes, which were missing from the service list
 - README "Adding a new service" example used a non-existent web-secure entrypoint and omitted the shared wildcard tls.domains block
 - ACME DNS-01 renewals failed every day from 2026-10-18 and the wildcard certificate expired on 2026-11-17, because the network redirects all outbound port 53 to the internal resolvers, which refuse the non-recursive queries lego sends to the authoritative Cloudflare nameservers. Skip only that authoritative check (propagation.disableANSChecks), keep the recursive check through the configured resolvers, and give it 10 minutes (CLOUDFLARE_PROPAGATION_TIMEOUT=600 in the systemd override) to ride out negative caching
+- /mcp-funfair token renamed MCP_FUNFAIR_AUTH_TOKEN to match monitoring; update chmods .env to 600
 ### Changed
 - Linux package cache backends (pacman, flathub) moved to the caches' addresses on the new LinuxCaches VLAN 21: `https://192.168.210.200:7777` and `https://192.168.210.201:7777` (were 192.168.150.200/201)
 - Dev package cache backends (api-nuget, funfair-nuget, funfair-prerelease-nuget, npm, dotnet) moved to the caches' addresses on the new Caches VLAN 20: `https://192.168.200.100:5555` and `https://192.168.200.101:5555` (were 192.168.150.100/101)
