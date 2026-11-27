@@ -464,6 +464,16 @@ http:
       middlewares:
         - internal-only
 
+    monitoring-funfair-mcp-router:
+      rule: "Host(`monitoring.markridgwell.com`) && Path(`/mcp-funfair`)"
+      service: monitoring-funfair-mcp-service
+      entryPoints:
+        - web-general
+        - monitoring
+      middlewares:
+        - monitoring-funfair-mcp-auth
+        - monitoring-funfair-mcp-path
+
     monitoring-router:
       rule: "Host(`monitoring.markridgwell.com`)"
       service: monitoring-service
@@ -1071,6 +1081,11 @@ http:
         servers:
           - url: "http://192.168.160.134:8082"
 
+    monitoring-funfair-mcp-service:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.160.134:8084"
+
     monitoring-mcp-service:
       loadBalancer:
         servers:
@@ -1121,6 +1136,18 @@ http:
       basicAuth:
         users:
           - "${MEMORY_WIKI_USERS}"
+    monitoring-funfair-mcp-auth:
+      plugin:
+        traefik-api-token-middleware:
+          authenticationHeader: false
+          bearerHeader: true
+          bearerHeaderName: Authorization
+          removeHeadersOnSuccess: false
+          tokens:
+            - "${FUNFAIR_MCP_TOKEN}"
+    monitoring-funfair-mcp-path:
+      replacePath:
+        path: /mcp
 
     # Enforces "internal only" in Traefik itself rather than relying solely on
     # the host firewall: cloudflared reaches Traefik over loopback, which the

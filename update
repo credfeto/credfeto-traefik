@@ -77,6 +77,14 @@ CLOUDFLARE_EMAIL=$(grep -E "^CLOUDFLARE_EMAIL=" .env | cut -d '=' -f2-)
 MEMORY_DEV_TOKEN=$(grep -E "^MEMORY_DEV_TOKEN=" .env | cut -d '=' -f2-)
 MEMORY_NETADMIN_TOKEN=$(grep -E "^MEMORY_NETADMIN_TOKEN=" .env | cut -d '=' -f2-)
 MEMORY_WIKI_USERS=$(grep -E "^MEMORY_WIKI_USERS=" .env | cut -d '=' -f2-)
+FUNFAIR_MCP_TOKEN=$(grep -E "^FUNFAIR_MCP_TOKEN=" .env | cut -d '=' -f2-)
+
+# FUNFAIR_MCP_TOKEN is optional. Without it, the /mcp-funfair route gets a
+# random token no client knows, so it stays closed rather than open.
+if [ -z "${FUNFAIR_MCP_TOKEN}" ]; then
+    FUNFAIR_MCP_TOKEN=$(od -An -N32 -tx1 /dev/urandom | tr -d ' \n')
+    info "FUNFAIR_MCP_TOKEN not set in .env - the /mcp-funfair route stays closed"
+fi
 
 # LAN ranges, defined once: used for both the firewall rules (step 8) and the
 # internal-only middleware's sourceRange in dynamic_conf.yml. The LAN's global
@@ -109,12 +117,14 @@ rm -f "${rendered_traefik_yml}"
 # shellcheck disable=SC2016
 MEMORY_DEV_TOKEN="${MEMORY_DEV_TOKEN}" \
 MEMORY_NETADMIN_TOKEN="${MEMORY_NETADMIN_TOKEN}" MEMORY_WIKI_USERS="${MEMORY_WIKI_USERS}" \
+FUNFAIR_MCP_TOKEN="${FUNFAIR_MCP_TOKEN}" \
 LAN_SOURCE_RANGES="${LAN_SOURCE_RANGES}" \
-envsubst '${MEMORY_DEV_TOKEN} ${MEMORY_NETADMIN_TOKEN} ${MEMORY_WIKI_USERS} ${LAN_SOURCE_RANGES}' \
+envsubst '${MEMORY_DEV_TOKEN} ${MEMORY_NETADMIN_TOKEN} ${MEMORY_WIKI_USERS} ${FUNFAIR_MCP_TOKEN} ${LAN_SOURCE_RANGES}' \
     < dynamic_conf.template.yml > /etc/traefik/dynamic_conf.yml \
     || die "Failed to generate dynamic_conf.yml"
 # traefik (not root) reads this at runtime via the file provider, and it
-# carries the memory tokens, so it must be readable by traefik but no one else.
+# carries the memory and Funfair MCP tokens, so it must be readable by traefik
+# but no one else.
 chown traefik:traefik /etc/traefik/dynamic_conf.yml || die "Failed to set ownership on dynamic_conf.yml"
 chmod 600 /etc/traefik/dynamic_conf.yml || die "Failed to set permissions on dynamic_conf.yml"
 success "Traefik config generated"
